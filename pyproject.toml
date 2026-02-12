@@ -1,0 +1,11 @@
+[project]
+name = "42-fly-in"
+version = "0.1.0"
+description = "An implementation of th fly-in project from school 42 (subject v1.1)"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "flake8>=7.3.0",
+    "mypy>=1.19.1",
+    "pydantic>=2.12.5",
+]
