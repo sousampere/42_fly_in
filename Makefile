@@ -51,6 +51,10 @@ install:
 run:
 	uv run python code/main.py
 
+drun:
+	clear && clear
+	uv run python code/main.py
+
 flake8: sync
 	uv run python3.14 -m flake8 ./src
 
