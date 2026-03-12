@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: gtourdia <@student.42mulhouse.fr>          +#+  +:+       +#+         #
+#    By: gtourdia <gtourdia@42mulhouse.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
-#                                                      #+#    #+#              #
-#    26/01/2026            Fly-in                     ###   ########.fr        #
+#    Created: Invalid date        by                   #+#    #+#              #
+#    Updated: 2026/03/12 22:24:43 by gtourdia         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -49,40 +49,8 @@ install:
 # 	uv sync
 
 run:
-	uv run python code/main.py
+	uv run python main.py
 
 drun:
 	clear && clear
-	uv run python code/main.py
-
-flake8: sync
-	uv run python3.14 -m flake8 ./src
-
-mypy: sync
-	uv run python3.14 -m mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
-
-mypy-strict: sync
-	uv run python3.14 -m mypy . --strict
-
-lint: flake8 mypy
-
-lint-strict: flake8 mypy-strict
-
-debug:
-# 	echo "debug needs to be run in the virtual env -> source .venv/bin/activate"
-# 	python -m pdb -m src --input $(DEFAULT_INPUT) --output $(DEFAULT_OUTPUT)
-
-tester:
-# 	run tester
-
-clean:
-# 	rm -rf data/output
-# 	rm -rf .venv
-# 	rm -rf .mypy_cache
-# 	rm -rf __pycache__
-# 	rm -rf .pytest_cache
-# 	rm -rf .llm
-# 	rm -rf .uv_cache
-
-re: clean install
-# 	aaaa
+	uv run python main.py
