@@ -10,8 +10,13 @@
 #                                                                           #
 # ************************************************************************* #
 
+from src import parse_config_file
+
+
 def main():
+    parse_config_file("maps/easy/01_linear_path.txt")
     pass
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

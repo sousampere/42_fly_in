@@ -14,17 +14,22 @@ __version__ = '1.0.0'
 __author__ = 'gtourdia'
 
 # Errors
-from objects import ZoneConfigurationError, \
-                    ConnectionConfigurationError
+from .objects import ZoneConfigurationError, \
+                    ConnectionConfigurationError, \
+                    ConfigurationFileError
 
 # Enumerations
-from objects import Color, \
+from .objects import Color, \
                     ZoneType
 
 # Main objects
-from objects import Zone, \
+from .objects import Zone, \
                     Drone, \
-                    Connection
+                    Connection, \
+                    State
+
+# Functions
+from .parsing import parse_config_file
 
 __all__ = [
     'ZoneConfigurationError',
@@ -33,5 +38,7 @@ __all__ = [
     'ZoneType',
     'Zone',
     'Drone',
-    'Connection'
+    'Connection',
+    'State',
+    'parse_config_file'
     ]

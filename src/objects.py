@@ -29,6 +29,11 @@ class ConnectionConfigurationError(Exception):
     pass
 
 
+class ConfigurationFileError(Exception):
+    """ Connection Configuration Error """
+    pass
+
+
 # Enumerations
 class Color(Enum):
     """ Enumeration of different colors possible """
@@ -62,13 +67,15 @@ class Zone(BaseModel):
     type: ZoneType = Field(default=ZoneType.NORMAL)
     max_drones: int = Field(default=1, ge=0)
     drones: List[Drone] = Field(default=[])
+    is_end_hub: bool = Field(default=False)
 
     @model_validator(mode='after')
-    def verify_data(self) -> "Zone":
+    def verify_data(self) -> self:
         if '-' in self.name:
             raise ZoneConfigurationError(f'Invalid zone name {self.name}'
                                          '. A zone name can not contain '
                                          'dashes in its name.')
+        return self
 
 
 class Connection(BaseModel):
@@ -79,12 +86,13 @@ class Connection(BaseModel):
     drones: List[Drone] = Field(default=[])
 
     @model_validator(mode='after')
-    def verify_data(self) -> "Connection":
+    def verify_data(self) -> self:
         if (self.zone_one.name == self.zone_one.name):
             raise ConnectionConfigurationError('Tried to establish an '
                                                'invalid connection between'
                                                ' a zone and itself '
                                                f'({self.zone_one.name})')
+        return self
 
 
 class State(BaseModel):
