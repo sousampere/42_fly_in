@@ -3,18 +3,20 @@
 #                                                      :::      ::::::::    #
 #  main.py                                           :+:      :+:    :+:    #
 #                                                  +:+ +:+         +:+      #
-#  By: gtourdia <gtourdia@42mulhouse.fr>         +#+  +:+       +#+         #
+#  By: gtourdia <gtourdia@student.42.fr>         +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/03/12 22:24:12 by gtourdia        #+#    #+#               #
-#  Updated: 2026/03/12 22:24:31 by gtourdia        ###   ########.fr        #
+#  Updated: 2026/03/15 16:04:22 by gtourdia        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
-from src import parse_config_file
+from src import ConfigParser
 
 
 def main():
-    parse_config_file("maps/easy/01_linear_path.txt")
+    parser = ConfigParser()
+    state = parser.parse_config_file('maps/easy/01_linear_path.txt')
+    print(state)
     pass
 
 
