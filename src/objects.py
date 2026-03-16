@@ -7,7 +7,7 @@
 #  By: gtourdia <gtourdia@student.42.fr>         +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/03/12 21:12:28 by gtourdia        #+#    #+#               #
-#  Updated: 2026/03/16 16:19:22 by gtourdia        ###   ########.fr        #
+#  Updated: 2026/03/16 16:35:46 by gtourdia        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -18,6 +18,7 @@ from typing import Any, Dict, List
 import pygame
 import sys
 from pydantic import BaseModel, Field, field_validator, model_validator
+
 
 
 # Errors
@@ -123,7 +124,7 @@ class State(BaseModel):
     """State of the operation
     Class containing zones and their connections"""
 
-    zones: List = Field(default=[])
+    zones: List[Zone] = Field(default=[])
     connection: List[Dict[str, Zone | int]] = Field(default=[])
 
     def __str__(self):
@@ -325,7 +326,7 @@ class StateVisualizer(ABC):
         """Visualize a state"""
         # Setup
         pygame.init()
-        WIDTH, HEIGHT = 800, 600
+        WIDTH, HEIGHT = 1200, 600
         screen = pygame.display.set_mode((WIDTH, HEIGHT))
         pygame.display.set_caption('Fly-in to the mooon 🚀')
         drone = pygame.image.load('assets/drone.png').convert_alpha()
@@ -361,11 +362,18 @@ class StateVisualizer(ABC):
             pygame.draw.rect(screen, '#1b263b', interraction_container)
 
             for zone in state.zones:
-                pygame.draw.circle(screen, 'red', (
-                    (zone.x - coords_range['x_min']) * (WIDTH * 0.8) / coords_range['x_range'] + WIDTH * 0.1,
-                    (zone.y - coords_range['y_min']) * (HEIGHT * 0.6) / coords_range['y_range'] + HEIGHT * 0.2
-                    ), 10)
-            
+                try:
+                    pygame.draw.circle(screen, zone.color.value, (
+                        (zone.x - coords_range['x_min']) * (WIDTH * 0.8) / coords_range['x_range'] + WIDTH * 0.1,
+                        (zone.y - coords_range['y_min']) * (HEIGHT * 0.6) / coords_range['y_range'] + HEIGHT * 0.2
+                        ), 10)
+                except Exception:
+                    pygame.draw.circle(screen, 'white', (
+                        (zone.x - coords_range['x_min']) * (WIDTH * 0.8) / coords_range['x_range'] + WIDTH * 0.1,
+                        (zone.y - coords_range['y_min']) * (HEIGHT * 0.6) / coords_range['y_range'] + HEIGHT * 0.2
+                        ), 10)
+                for connection in zone.connections:
+                    
 
             if pause:
                 screen.blit(pause_button, interraction_container)
