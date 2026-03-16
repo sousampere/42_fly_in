@@ -6,17 +6,19 @@
 #  By: gtourdia <gtourdia@student.42.fr>         +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/03/12 22:24:12 by gtourdia        #+#    #+#               #
-#  Updated: 2026/03/15 16:04:22 by gtourdia        ###   ########.fr        #
+#  Updated: 2026/03/16 15:05:22 by gtourdia        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
 from src import ConfigParser
+from src.objects import StateVisualizer
 
 
 def main():
     parser = ConfigParser()
-    state = parser.parse_config_file('maps/easy/01_linear_path.txt')
+    state = parser.parse_config_file('maps/hard/01_maze_nightmare.txt')
     print(state)
+    StateVisualizer.visualize(state)
     pass
 
 

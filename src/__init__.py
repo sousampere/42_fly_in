@@ -6,7 +6,7 @@
 #  By: gtourdia <gtourdia@student.42.fr>         +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/03/12 22:22:58 by gtourdia        #+#    #+#               #
-#  Updated: 2026/03/15 15:58:15 by gtourdia        ###   ########.fr        #
+#  Updated: 2026/03/16 00:21:58 by gtourdia        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -26,7 +26,6 @@ from .objects import Color, \
 # Main objects
 from .objects import Zone, \
                     Drone, \
-                    Connection, \
                     State
 
 __all__ = [
