@@ -6,7 +6,7 @@
 #  By: gtourdia <gtourdia@student.42.fr>         +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/03/12 22:22:58 by gtourdia        #+#    #+#               #
-#  Updated: 2026/03/16 00:21:58 by gtourdia        ###   ########.fr        #
+#  Updated: 2026/03/19 22:22:24 by gtourdia        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -26,7 +26,12 @@ from .objects import Color, \
 # Main objects
 from .objects import Zone, \
                     Drone, \
-                    State
+                    State, \
+                    PathFinder
+
+# StateObjects
+from .StateProcessor import StateProcessor
+from .StateVisualizer import StateVisualizer
 
 __all__ = [
     'ZoneConfigurationError',
@@ -38,5 +43,8 @@ __all__ = [
     'Drone',
     'Connection',
     'State',
-    'ConfigParser'
+    'ConfigParser',
+    'StateProcessor',
+    'StateVisualizer',
+    'PathFinder'
     ]
