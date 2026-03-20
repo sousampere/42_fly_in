@@ -6,7 +6,7 @@
 #  By: gtourdia <gtourdia@student.42.fr>         +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/03/19 13:43:13 by gtourdia        #+#    #+#               #
-#  Updated: 2026/03/19 20:50:07 by gtourdia        ###   ########.fr        #
+#  Updated: 2026/03/20 14:26:18 by gtourdia        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -168,10 +168,7 @@ class StateVisualizer(AbstractStateVisualizer):
                 for drone in zone.drones:
                     drone_x = random.choice(range(int(zone_x) - 10, int(zone_x) + 10))
                     drone_y = random.choice(range(int(zone_y) - 10, int(zone_y) + 10))
-                    
-                    drone = pygame.image.load("assets/play.png").convert_alpha()
-                    drone = pygame.transform.scale(drone, (10, 10))
-                    drone_container = pygame.Rect(drone_x, drone_y, 20, 20)
+
                     pygame.draw.circle(screen, 'black', (drone_x, drone_y), 6)
                     pygame.draw.circle(screen, random.choice(COLORS), (drone_x, drone_y), 5)
 
@@ -181,11 +178,10 @@ class StateVisualizer(AbstractStateVisualizer):
                 screen.blit(play_button, interraction_container)
 
             screen.blit(logo, logo_container)
-            img = font.render("./Fly-in to  the moon !", True, TEXT_COLOR)
+            img = font.render("./Fly-in_to_the_moon", True, TEXT_COLOR)
             img_w, img_h = img.get_size()
             img = pygame.transform.scale(img, (img_w * 5, img_h * 5))
             screen.blit(img, (WIDTH - img.get_width() - 30, 30))
-            screen.blit(drone, drone_container)
 
             # Refresh frame
             pygame.display.flip()

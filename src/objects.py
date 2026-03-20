@@ -7,7 +7,7 @@
 #  By: gtourdia <gtourdia@student.42.fr>         +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/03/12 21:12:28 by gtourdia        #+#    #+#               #
-#  Updated: 2026/03/19 22:27:48 by gtourdia        ###   ########.fr        #
+#  Updated: 2026/03/20 14:41:32 by gtourdia        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -15,6 +15,8 @@
 from abc import ABC, abstractmethod
 from enum import Enum
 import random
+import stat
+from turtle import st
 from typing import Any, Dict, List
 import pygame
 import sys
@@ -76,6 +78,7 @@ class ZoneType(Enum):
 
 class Drone(BaseModel):
     """Drone object"""
+
     name: str
 
     def __str__(self):
@@ -95,6 +98,9 @@ class Zone(BaseModel):
     drones: List[Drone] = Field(default=[])
     is_end_hub: bool = Field(default=False)
     connections: List[Dict[str, Any]] = []
+    # Connection is a dict that contains :
+    # 'zone': Zone,
+    # 'max_link_capacity': int
 
     @model_validator(mode="after")
     def verify_data(self) -> "Zone":
@@ -301,8 +307,14 @@ class PathFinder:
     def single_state_processor():
         pass
 
-    def get_drone_zone(drone: Drone):
-        pass
+
+    @staticmethod
+    def get_drone_zone(state: State, drone: Drone) -> Zone | None:
+        for zone in state.zones:
+            for z_drone in zone.drones:
+                if z_drone.name == drone.name:
+                    return zone
+        return None
 
     @staticmethod
     def move_drone(state: State, drone: Drone, move_zone: Zone):
@@ -311,10 +323,10 @@ class PathFinder:
             if zone.name == move_zone.name:
                 zone.drones.append(drone)
                 break
-        
+
         # Destroy previous drone
         for zone in state.zones:
-            if zone.name == move_zone.name and drone in zone.drones:
+            if zone.name != move_zone.name and drone in zone.drones:
+                print("rem drone")
                 zone.drones.remove(drone)
-        
         return state
