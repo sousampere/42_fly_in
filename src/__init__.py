@@ -10,41 +10,23 @@
 #                                                                           #
 # ************************************************************************* #
 
+__package__ = 'Fly-in to the moon'
 __version__ = '1.0.0'
 __author__ = 'gtourdia'
 
-# Errors
-from .objects import ZoneConfigurationError, \
-                    ConnectionConfigurationError, \
-                    ConfigurationFileError, \
-                    ConfigParser
 
-# Enumerations
-from .objects import Color, \
-                    ZoneType
-
-# Main objects
-from .objects import Zone, \
-                    Drone, \
-                    State, \
-                    PathFinder
-
-# StateObjects
-from .StateProcessor import StateProcessor
-from .StateVisualizer import StateVisualizer
-
-__all__ = [
-    'ZoneConfigurationError',
-    'ConnectionConfigurationError',
-    'ConfigurationFileError',
-    'Color',
-    'ZoneType',
-    'Zone',
-    'Drone',
-    'Connection',
-    'State',
-    'ConfigParser',
-    'StateProcessor',
-    'StateVisualizer',
-    'PathFinder'
-    ]
+# __all__ = [
+#     'ZoneConfigurationError',
+#     'ConnectionConfigurationError',
+#     'ConfigurationFileError',
+#     'Color',
+#     'ZoneType',
+#     'Zone',
+#     'Drone',
+#     'Connection',
+#     'State',
+#     'ConfigParser',
+#     'StateProcessor',
+#     'StateVisualizer',
+#     'PathFinder'
+#     ]

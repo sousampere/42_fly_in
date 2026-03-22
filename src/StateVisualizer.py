@@ -18,13 +18,11 @@ import sys
 from src import State
 
 
-
 class AbstractStateVisualizer(ABC):
     """Class to visualize a state"""
     @abstractmethod
     def visualize(state: State) -> None:
         pass
-
 
 
 class StateVisualizer(AbstractStateVisualizer):
