@@ -6,7 +6,7 @@
 #  By: gtourdia <gtourdia@student.42.fr>         +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/03/12 22:24:12 by gtourdia        #+#    #+#               #
-#  Updated: 2026/03/23 14:20:46 by gtourdia        ###   ########.fr        #
+#  Updated: 2026/03/24 13:17:26 by gtourdia        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -16,8 +16,10 @@ def main():
     config_path = 'maps/hard/02_capacity_hell.txt'
     
     parser = ConfigParser()
-    parser.parse(config_path)
+    state = parser.parse(config_path)
     
+    print(state)
+
     pass
 
 

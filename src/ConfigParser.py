@@ -2,6 +2,7 @@
 
 from typing import List
 
+from src.MapState.State import State
 from src.MapState.Connection import Connection
 from src.MapState.Drone import Drone
 from src.MapState.Zone import Zone, ZoneError, ZoneType
@@ -13,7 +14,7 @@ class ConfigError(Exception):
 
 class ConfigParser:
     @staticmethod
-    def parse(file_path: str):
+    def parse(file_path: str) -> State:
         with open(file_path, 'r') as f:
             commented_lines = f.readlines()
 
@@ -35,11 +36,11 @@ class ConfigParser:
 
         # Create connections
         connections = ConfigParser.get_connections(lines=lines)
-        for c in connections:
-            print(c)
 
-        for zone in zones:
-            print(zone)
+        # Create state
+        state = State(zones=zones, connections=connections)
+
+        return state
 
     def get_drones(lines: List[str]) -> List[Drone]:
         for index, line in enumerate(lines, start=1):
