@@ -2,6 +2,7 @@
 
 from typing import List
 
+from src.MapState.Connection import Connection
 from src.MapState.Drone import Drone
 from src.MapState.Zone import Zone, ZoneError, ZoneType
 
@@ -33,6 +34,9 @@ class ConfigParser:
                 zone.drones = drones
 
         # Create connections
+        connections = ConfigParser.get_connections(lines=lines)
+        for c in connections:
+            print(c)
 
         for zone in zones:
             print(zone)
@@ -90,6 +94,8 @@ class ConfigParser:
                             max_drones = metadata.split('=')[1].strip('\n]')
 
                 try:
+                    if name in [z.name for z in zones]:
+                        raise ConfigError(f'Zone name already used at line {index}')
                     zones.append(Zone(name=name, x=x, y=y, is_end=is_end,
                                       color=color, max_drones=max_drones,
                                       zone_type=zone_type, is_start=is_start))
@@ -98,4 +104,24 @@ class ConfigParser:
 
         return zones
     
-    def get_connections(lines: list[str]) -> list[connection]
+    def get_connections(lines: list[str]) -> list[Connection]:
+        connections = []
+        for index, line in enumerate(lines, start=1):
+            if line.startswith('connection:'):
+                if len(line.split('[')[0].strip().split(' ')) != 2:
+                    raise ConfigError(f'Invalid connection at line {index}')
+                connection = line.split('[')[0].strip().split(' ')[1].split('-')
+                if len(connection) != 2:
+                    raise ConfigError(f'Invalid connection at line {index}')
+                if connection[0] == connection[1]:
+                    raise ConfigError(f'Invalid connection at line {index}')
+                max_link_capacity = 1
+                if len(line.split('[')) == 2:
+                    if line.split('[')[1].strip('\n[]').split('=')[0] == 'max_link_capacity':
+                        try:
+                            max_link_capacity = int(line.split('[')[1].strip('\n[]').split('=')[1])
+                        except Exception:
+                            raise ConfigError(f'Invalid max_link_capacity at line {line}')
+                connections.append(Connection(zones=[connection[0], connection[1]],
+                                              max_link_capacity=max_link_capacity))
+        return connections
