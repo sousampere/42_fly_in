@@ -32,6 +32,7 @@ class ConfigParser:
             if zone.is_start:
                 zone.drones = drones
 
+        # Create connections
 
         for zone in zones:
             print(zone)
@@ -96,3 +97,5 @@ class ConfigParser:
                     raise ConfigError(f'Invalid zone at line {index}: {e}')
 
         return zones
+    
+    def get_connections(lines: list[str]) -> list[connection]

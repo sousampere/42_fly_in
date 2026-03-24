@@ -31,6 +31,7 @@ class Zone(BaseModel):
     max_drones: int = Field(ge=0, default=1)
     zone_type: ZoneType = Field(default=ZoneType.NORMAL)
     drones: List[Drone] = []
+    _future_drones: int = 0
 
     @model_validator(mode='after')
     def verify(self) -> "Zone":
