@@ -4,7 +4,6 @@ from abc import ABC, abstractmethod
 import random
 
 from src.MapState.Zone import ZoneType
-from src.MapState import Drone
 from src.MapState.State import State
 import pygame
 
@@ -19,13 +18,17 @@ class StateVisualizer(AbstractStateVisualizer):
     @staticmethod
     def visualize(state: State):
         pygame.init()
-        WIDTH, HEIGHT = 2000, 1200
+        WIDTH, HEIGHT = 1200, 800
+        ZONE_RADIUS = int(min(WIDTH, HEIGHT) * 0.015)
+        sizes = (WIDTH, HEIGHT, ZONE_RADIUS)
+        
         screen = pygame.display.set_mode((WIDTH, HEIGHT))
-        block_tex = pygame.image.load('/home/gtourdia/Documents/42_fly_in/assets/dirt.jpg').convert()
-        drone_tex = pygame.image.load('/home/gtourdia/Documents/42_fly_in/assets/drone_2.png').convert_alpha()
+        block_tex = pygame.image.load('assets/dirt.bmp').convert()
+        drone_tex = pygame.image.load('assets/drone_2.bmp').convert_alpha()
         block_tex = pygame.transform.scale(block_tex, (64, 64))
-        drone_tex = pygame.transform.scale(drone_tex, (20, 20))
-        bg = StateVisualizer.create_background(block_tex, WIDTH, HEIGHT)
+        drone_tex = pygame.transform.scale(drone_tex, (ZONE_RADIUS * 2, ZONE_RADIUS * 2))
+        drone_tex = pygame.transform.flip(drone_tex, flip_x=True, flip_y=False)
+        bg = StateVisualizer.create_background(block_tex, sizes)
         
         clock = pygame.time.Clock()
         running = True
@@ -40,19 +43,19 @@ class StateVisualizer(AbstractStateVisualizer):
             screen.blit(bg, (0,0))
 
             # Apply soft shadow filter
-            shadow = StateVisualizer.get_transparency_filter(WIDTH, HEIGHT)
+            shadow = StateVisualizer.get_transparency_filter(sizes)
             screen.blit(shadow, (0, 0))
 
             # Render Connections
-            connections = StateVisualizer.create_connections(state, WIDTH, HEIGHT)
+            connections = StateVisualizer.create_connections(state, sizes)
             screen.blit(connections, (0, 0))
 
             # Render zones
-            zones = StateVisualizer.create_zones(state, WIDTH, HEIGHT)
+            zones = StateVisualizer.create_zones(state, sizes)
             screen.blit(zones, (0, 0))
 
             # Render drones
-            drones = StateVisualizer.create_drones(state, WIDTH, HEIGHT, drone_tex)
+            drones = StateVisualizer.create_drones(state, sizes, drone_tex)
             screen.blit(drones, (0, 0))
 
             # Update screen
@@ -60,7 +63,8 @@ class StateVisualizer(AbstractStateVisualizer):
             clock.tick(60)  # Max 60 fps
     
     @staticmethod
-    def create_background(texture: pygame.Surface, WIDTH: int, HEIGHT: int):
+    def create_background(texture: pygame.Surface, sizes: tuple):
+        WIDTH, HEIGHT, ZONE_RADIUS = sizes
         bg = pygame.Surface((WIDTH, HEIGHT)).convert_alpha()
         bg.fill((0,0,0,0))
         tile_w, tile_h = texture.get_size()
@@ -71,13 +75,15 @@ class StateVisualizer(AbstractStateVisualizer):
         return bg
 
     @staticmethod
-    def get_transparency_filter(WIDTH: int, HEIGHT: int) -> pygame.Surface:
+    def get_transparency_filter(sizes: tuple) -> pygame.Surface:
+        WIDTH, HEIGHT, ZONE_RADIUS = sizes
         surface = pygame.Surface((WIDTH, HEIGHT)).convert_alpha()
         surface.fill((0,0,0,150))  # Make background transparent
         return surface
 
     @staticmethod
-    def create_zones(state: State, WIDTH: int, HEIGHT: int):
+    def create_zones(state: State, sizes: tuple):
+        WIDTH, HEIGHT, ZONE_RADIUS = sizes
         surface = pygame.Surface((WIDTH, HEIGHT)).convert_alpha()
         surface.fill((0,0,0,0))  # Make background transparent
         width_padding_percent = 0.8
@@ -111,16 +117,17 @@ class StateVisualizer(AbstractStateVisualizer):
             else:
                 outline = 'blue'
 
-            pygame.draw.circle(surface, 'black', (zone_x, zone_y), 20)
-            pygame.draw.circle(surface, outline, (zone_x, zone_y), 19)
-            pygame.draw.circle(surface, 'black', (zone_x, zone_y), 17)
+            pygame.draw.circle(surface, 'black', (zone_x, zone_y), ZONE_RADIUS + 5)
+            pygame.draw.circle(surface, outline, (zone_x, zone_y), ZONE_RADIUS + 4)
+            pygame.draw.circle(surface, 'black', (zone_x, zone_y), ZONE_RADIUS + 2)
 
-            pygame.draw.circle(surface, color, (zone_x, zone_y), 15)
+            pygame.draw.circle(surface, color, (zone_x, zone_y), ZONE_RADIUS)
 
         return surface
 
     @staticmethod
-    def create_connections(state: State, WIDTH: int , HEIGHT: int):
+    def create_connections(state: State, sizes: tuple):
+        WIDTH, HEIGHT, ZONE_RADIUS = sizes
         surface = pygame.Surface((WIDTH, HEIGHT)).convert_alpha()
         surface.fill((0,0,0,0))  # Make background transparent
         x_min, x_max, y_min, y_max = state.get_min_max_coords()
@@ -159,7 +166,8 @@ class StateVisualizer(AbstractStateVisualizer):
         return surface
 
     @staticmethod
-    def create_drones(state: State, WIDTH: int , HEIGHT: int, drone_tex: pygame.Surface):
+    def create_drones(state: State, sizes: tuple, drone_tex: pygame.Surface):
+        WIDTH, HEIGHT, ZONE_RADIUS = sizes
         surface = pygame.Surface((WIDTH, HEIGHT)).convert_alpha()
         surface.fill((0,0,0,0))  # Make background transparent
         x_min, x_max, y_min, y_max = state.get_min_max_coords()

@@ -16,7 +16,7 @@ from src.ConfigParser import ConfigParser
 from src.StateVisualizer import StateVisualizer
 
 def main():
-    config_path = 'maps/challenger/01_the_impossible_dream.txt'
+    config_path = 'maps/easy/02_simple_fork.txt'
     
     parser = ConfigParser()
     state = parser.parse(config_path)
