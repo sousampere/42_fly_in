@@ -1,7 +1,9 @@
 
 
 from abc import ABC, abstractmethod
+import random
 
+from src.MapState.Zone import ZoneType
 from src.MapState import Drone
 from src.MapState.State import State
 import pygame
@@ -100,6 +102,19 @@ class StateVisualizer(AbstractStateVisualizer):
             color = zone.color if zone.color in available_colors else 'white'
 
             # Draw zones
+            if zone.zone_type == ZoneType.RESTRICTED:
+                outline = 'red'
+            elif zone.zone_type == ZoneType.BLOCKED:
+                outline = 'black'
+            elif zone.zone_type == ZoneType.PRIORITY:
+                outline = 'green'
+            else:
+                outline = 'blue'
+
+            pygame.draw.circle(surface, 'black', (zone_x, zone_y), 20)
+            pygame.draw.circle(surface, outline, (zone_x, zone_y), 19)
+            pygame.draw.circle(surface, 'black', (zone_x, zone_y), 17)
+
             pygame.draw.circle(surface, color, (zone_x, zone_y), 15)
 
         return surface
@@ -150,6 +165,7 @@ class StateVisualizer(AbstractStateVisualizer):
         x_min, x_max, y_min, y_max = state.get_min_max_coords()
         width_padding_percent = 0.8
         height_padding_percent = 0.7
+        random.seed('fly-in will be done before 2026-27-03')
 
         for zone in state.zones:
             for drone in zone.drones:
@@ -161,7 +177,42 @@ class StateVisualizer(AbstractStateVisualizer):
                 ) / (y_max - y_min) + HEIGHT * (
                     (1 - height_padding_percent) / 2
                 )
-                drone_coords = (drone_x, drone_y)
+                drone_coords = (drone_x - 10 + random.choice(range(-10, 10)),
+                                drone_y - 10 + random.choice(range(-10, 10)))
+                surface.blit(drone_tex , drone_coords)
+
+        for connection in state.connections:
+            for drone in connection.drones:
+                zone_1 = None
+                zone_2 = None
+                for zone in state.zones:
+                    # Zone 1 coord
+                    if zone.name == connection.zones[0]:
+                        zone_x = (zone.x - x_min) * (
+                            WIDTH * width_padding_percent
+                        ) / (x_max - x_min) + WIDTH * ((1 - width_padding_percent) / 2)
+                        zone_y = (zone.y - (y_min)) * (
+                            HEIGHT * height_padding_percent
+                        ) / (y_max - y_min) + HEIGHT * (
+                            (1 - height_padding_percent) / 2
+                        )
+                        zone_1 = (zone_x, zone_y)
+
+                    # Zone 2 coord
+                    if zone.name == connection.zones[1]:
+                        zone_x = (zone.x - x_min) * (
+                            WIDTH * width_padding_percent
+                        ) / (x_max - x_min) + WIDTH * ((1 - width_padding_percent) / 2)
+                        zone_y = (zone.y - (y_min)) * (
+                            HEIGHT * height_padding_percent
+                        ) / (y_max - y_min) + HEIGHT * (
+                            (1 - height_padding_percent) / 2
+                        )
+                        zone_2 = (zone_x, zone_y)
+                
+                drone_coords = ((max(zone_1[0], zone_2[0]) + min(zone_1[0], zone_2[0])) / 2 - 10,
+                                (max(zone_1[1], zone_2[1]) + min(zone_1[1], zone_2[1])) / 2 - 10)
+
                 surface.blit(drone_tex, drone_coords)
 
         return surface

@@ -6,24 +6,30 @@
 #  By: gtourdia <gtourdia@student.42.fr>         +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/03/12 22:24:12 by gtourdia        #+#    #+#               #
-#  Updated: 2026/03/27 14:43:34 by gtourdia        ###   ########.fr        #
+#  Updated: 2026/03/27 17:35:19 by gtourdia        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
+from src.MapState.Drone import Drone
 from src.StateProcessor import StateProcessor
 from src.ConfigParser import ConfigParser
 from src.StateVisualizer import StateVisualizer
 
 def main():
-    config_path = 'maps/medium/02_circular_loop.txt'
+    config_path = 'maps/challenger/01_the_impossible_dream.txt'
     
     parser = ConfigParser()
     state = parser.parse(config_path)
+
+    for zone in state.zones:
+        print(zone.zone_type)
     
     # processor = StateProcessor()
 
     # for _ in processor.yield_process(state):
     #     pass
+
+    state.connections[1].drones.append(Drone(name='danny'))
 
     visu = StateVisualizer()
     visu.visualize(state)
