@@ -12,6 +12,7 @@ class Connection(BaseModel):
     #   {'drone': Drone, 'going_to': Zone}
     # ]
     max_link_capacity: int = Field(default=1)
+    cost: int = Field(default=1)
 
     def __str__(self) -> str:
         return f'{self.zones[0]}<->{self.zones[1]} max:{self.max_link_capacity}'

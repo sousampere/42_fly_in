@@ -43,3 +43,4 @@ class Zone(BaseModel):
         return f'Zone "{self.name}" at ({self.x}, {self.y}), | '\
         f'Color={self.color}, Max_drones={self.max_drones}, '\
         f'of type {self.zone_type.value}'
+    

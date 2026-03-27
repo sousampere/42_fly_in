@@ -6,23 +6,27 @@
 #  By: gtourdia <gtourdia@student.42.fr>         +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/03/12 22:24:12 by gtourdia        #+#    #+#               #
-#  Updated: 2026/03/24 14:38:46 by gtourdia        ###   ########.fr        #
+#  Updated: 2026/03/27 14:43:34 by gtourdia        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
 from src.StateProcessor import StateProcessor
 from src.ConfigParser import ConfigParser
+from src.StateVisualizer import StateVisualizer
 
 def main():
-    config_path = 'maps/hard/02_capacity_hell.txt'
+    config_path = 'maps/medium/02_circular_loop.txt'
     
     parser = ConfigParser()
     state = parser.parse(config_path)
     
-    processor = StateProcessor()
+    # processor = StateProcessor()
 
-    for _ in processor.yield_process(state):
-        pass
+    # for _ in processor.yield_process(state):
+    #     pass
+
+    visu = StateVisualizer()
+    visu.visualize(state)
 
     print(state)
 
