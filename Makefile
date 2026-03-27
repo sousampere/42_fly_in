@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: gtourdia <gtourdia@42mulhouse.fr>          +#+  +:+       +#+         #
+#    By: gtourdia <gtourdia@student.42mulhouse.f    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: Invalid date        by                   #+#    #+#              #
-#    Updated: 2026/03/12 22:24:43 by gtourdia         ###   ########.fr        #
+#    Updated: 2026/03/27 22:47:19 by gtourdia         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -25,7 +25,6 @@ RESET=\033[0m
 
 # MAIN VARIABLES
 INTERPRETER			=	python3
-
 
 install:
 	@printf "\033[2J\033[H"

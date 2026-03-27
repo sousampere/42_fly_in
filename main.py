@@ -24,10 +24,8 @@ def main():
     for zone in state.zones:
         print(zone.zone_type)
     
-    # processor = StateProcessor()
-
-    # for _ in processor.yield_process(state):
-    #     pass
+    processor = StateProcessor()
+    print(processor.calculate_shortest_path(state, 'D1'))
 
     state.connections[1].drones.append(Drone(name='danny'))
 
