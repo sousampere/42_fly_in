@@ -16,7 +16,8 @@ from src.ConfigParser import ConfigParser
 from src.StateVisualizer import StateVisualizer
 
 def main():
-    config_path = 'maps/hard/02_capacity_hell.txt'
+    config_path = 'maps/hard/01_maze_nightmare.txt'
+    # config_path = 'maps/medium/03_priority_puzzle.txt'
     
     parser = ConfigParser()
     state = parser.parse(config_path)

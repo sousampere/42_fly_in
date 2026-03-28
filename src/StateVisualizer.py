@@ -22,7 +22,7 @@ class StateVisualizer(AbstractStateVisualizer):
     @staticmethod
     def visualize(state: State):
         pygame.init()
-        WIDTH, HEIGHT = 2000, 1000
+        WIDTH, HEIGHT = 1200, 800
         ZONE_RADIUS = int(min(WIDTH, HEIGHT) * 0.015)
         sizes = (WIDTH, HEIGHT, ZONE_RADIUS)
 
@@ -91,6 +91,8 @@ class StateVisualizer(AbstractStateVisualizer):
                         # print(zones)
                         # processor.move_drone(state, 'D1', zones[0])
                         state = processor.process(state)
+                        if processor.is_completed(state):
+                            print('COMPLETED !')
 
     @staticmethod
     def create_background(texture: pygame.Surface, sizes: tuple):

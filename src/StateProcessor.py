@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 import math
 import random
-from typing import Generator
+from typing import Any, Generator
 
 from src.MapState.Connection import Connection
 from src.MapState.Drone import Drone
-from src.MapState.Zone import Zone
+from src.MapState.Zone import Zone, ZoneType
 from src.misc.is_state_solved import is_state_solved
 from src.MapState.State import State
 
@@ -26,6 +26,9 @@ class StateProcessor(AbstractStateProcessor):
 
     @staticmethod
     def process(state: State) -> State:
+        if StateProcessor.is_completed(state):
+            return state
+
         for drone_name in state.drone_names:
             shortest_path = StateProcessor.get_shortest_path(state, drone_name)
             state = StateProcessor.move_drone(state, drone_name, shortest_path)
@@ -85,9 +88,9 @@ class StateProcessor(AbstractStateProcessor):
             if current_zone.name in connection.zones:
                 for name in connection.zones:
                     if name != current_zone.name:
-                        available_zones.append(StateProcessor.str_to_zone(state, name))
-        # for z in available_zones:
-        #     print(z)
+                        new_neighbour = StateProcessor.str_to_zone(state, name)
+                        if new_neighbour.zone_type != ZoneType.BLOCKED:
+                            available_zones.append(new_neighbour)
 
         return available_zones
 
@@ -127,6 +130,7 @@ class StateProcessor(AbstractStateProcessor):
                 for drone in zone.drones:
                     if drone.name == drone_name:
                         drone_copy = drone
+                        drone_copy.last_visited.append(zone)
                         zone.drones.remove(drone)
                         drone_found = True
         
@@ -167,7 +171,13 @@ class StateProcessor(AbstractStateProcessor):
     def get_shortest_path(state: State, drone_name: str) -> Zone | Connection:
         available_zones = StateProcessor.get_next_zones(state, drone_name)
         sort = sorted(available_zones, key=lambda z: StateProcessor.calculate_distance_from_end(state, z))
-
+        for zone in sort:
+            if zone not in StateProcessor.get_drone_last_visided_zone(state, drone_name) \
+            and zone.zone_type == ZoneType.PRIORITY:
+                return zone
+            if zone in StateProcessor.get_drone_last_visided_zone(state, drone_name) \
+                or zone.zone_type == ZoneType.BLOCKED:
+                sort.remove(zone)
         return sort[0]
 
     @staticmethod
@@ -186,7 +196,31 @@ class StateProcessor(AbstractStateProcessor):
         distances = []
 
         for neighbor in neighbors:
-            if neighbor.name not in visited:
+            if neighbor.name not in visited and neighbor.zone_type != ZoneType.BLOCKED:
                 distances.append(StateProcessor.calculate_distance_from_end(state, neighbor, visited, cost + 1))
         
         return (min(distances) if distances else math.inf)
+    
+    @staticmethod
+    def get_drone_last_visided_zone(state: State, drone_name: str) -> list[Any] | None:
+        for zone in state.zones:
+            for drone in zone.drones:
+                if drone_name == drone.name:
+                    return drone.last_visited
+        return None
+
+    @staticmethod
+    def is_completed(state: State) -> bool:
+        """Return true if the state is completed
+
+        Args:
+            state (State): Current State
+
+        Returns:
+            bool: is completed ?
+        """
+        for drone in state.drone_names:
+            location = StateProcessor.get_drone_location(state, drone)
+            if location is not None and location.is_end != True:
+                return False
+        return True
