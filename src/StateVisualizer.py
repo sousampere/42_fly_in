@@ -3,6 +3,9 @@
 from abc import ABC, abstractmethod
 import random
 
+from pygame.cursors import arrow
+
+from src.StateProcessor import StateProcessor
 from src.MapState.Zone import ZoneType
 from src.MapState.State import State
 import pygame
@@ -18,27 +21,36 @@ class StateVisualizer(AbstractStateVisualizer):
     @staticmethod
     def visualize(state: State):
         pygame.init()
-        WIDTH, HEIGHT = 1200, 800
+        WIDTH, HEIGHT = 2000, 1000
         ZONE_RADIUS = int(min(WIDTH, HEIGHT) * 0.015)
         sizes = (WIDTH, HEIGHT, ZONE_RADIUS)
-        
+
+        # Create screen
         screen = pygame.display.set_mode((WIDTH, HEIGHT))
+
+        # Load textures
         block_tex = pygame.image.load('assets/dirt.bmp').convert()
         drone_tex = pygame.image.load('assets/drone_2.bmp').convert_alpha()
+        arrow_tex = pygame.image.load('assets/arrow.bmp').convert_alpha()
+
+        # Transform texture
         block_tex = pygame.transform.scale(block_tex, (64, 64))
         drone_tex = pygame.transform.scale(drone_tex, (ZONE_RADIUS * 2, ZONE_RADIUS * 2))
         drone_tex = pygame.transform.flip(drone_tex, flip_x=True, flip_y=False)
+        arrow_tex = pygame.transform.scale(arrow_tex, (64, 64))
+
+        # Create area to detect click, based on the arrow's dimensions
+        arrow_rect = arrow_tex.get_rect(topleft=(0, 0))
+
+        # Create background pattern
         bg = StateVisualizer.create_background(block_tex, sizes)
-        
+
+        processor = StateProcessor()
+
         clock = pygame.time.Clock()
         running = True
         while running:
-            
-            # Events
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-            
+
             # Render background
             screen.blit(bg, (0,0))
 
@@ -58,9 +70,24 @@ class StateVisualizer(AbstractStateVisualizer):
             drones = StateVisualizer.create_drones(state, sizes, drone_tex)
             screen.blit(drones, (0, 0))
 
+            # Render arrow
+            screen.blit(arrow_tex, (0, 0))
+
             # Update screen
             pygame.display.flip()
             clock.tick(60)  # Max 60 fps
+
+
+            # Events
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if arrow_rect.collidepoint(event.pos):
+                        print('Processing next round')
+                        state = processor.move_drone(state, 'D1', random.choice(state.zones))
+                        print(StateProcessor.get_next_zones(state, 'D1'))
     
     @staticmethod
     def create_background(texture: pygame.Surface, sizes: tuple):
@@ -173,7 +200,9 @@ class StateVisualizer(AbstractStateVisualizer):
         x_min, x_max, y_min, y_max = state.get_min_max_coords()
         width_padding_percent = 0.8
         height_padding_percent = 0.7
-        random.seed('fly-in will be done before 2026-27-03')
+
+        # Get a local random seed to prevend drone changing pos at each frame
+        local_random = random.Random('fly-in will be done before 2026-27-03')
 
         for zone in state.zones:
             for drone in zone.drones:
@@ -185,8 +214,8 @@ class StateVisualizer(AbstractStateVisualizer):
                 ) / (y_max - y_min) + HEIGHT * (
                     (1 - height_padding_percent) / 2
                 )
-                drone_coords = (drone_x - 10 + random.choice(range(-10, 10)),
-                                drone_y - 10 + random.choice(range(-10, 10)))
+                drone_coords = (drone_x - 10 + local_random.choice(range(-10, 10)),
+                                drone_y - 10 + local_random.choice(range(-10, 10)))
                 surface.blit(drone_tex , drone_coords)
 
         for connection in state.connections:

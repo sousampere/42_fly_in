@@ -6,7 +6,7 @@
 #  By: gtourdia <gtourdia@student.42.fr>         +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/03/12 22:24:12 by gtourdia        #+#    #+#               #
-#  Updated: 2026/03/27 17:35:19 by gtourdia        ###   ########.fr        #
+#  Updated: 2026/03/28 14:13:56 by gtourdia        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -16,7 +16,7 @@ from src.ConfigParser import ConfigParser
 from src.StateVisualizer import StateVisualizer
 
 def main():
-    config_path = 'maps/easy/02_simple_fork.txt'
+    config_path = 'maps/medium/01_dead_end_trap.txt'
     
     parser = ConfigParser()
     state = parser.parse(config_path)
@@ -25,9 +25,10 @@ def main():
         print(zone.zone_type)
     
     processor = StateProcessor()
-    print(processor.calculate_shortest_path(state, 'D1'))
+    # state = processor.move_drone(state, 'D1', state.connections[1])
+    # print(processor.calculate_shortest_path(state, 'D1'))
 
-    state.connections[1].drones.append(Drone(name='danny'))
+    # state.connections[1].drones.append(Drone(name='danny'))
 
     visu = StateVisualizer()
     visu.visualize(state)
