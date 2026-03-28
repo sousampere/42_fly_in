@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import math
 import random
 from typing import Generator
 
@@ -55,7 +56,8 @@ class StateProcessor(AbstractStateProcessor):
 
         # Drone found in Zone
         if isinstance(drone_origin, Zone):
-            return StateProcessor.get_neighbour_zones(state, drone_origin)
+            neighbours = StateProcessor.get_neighbour_zones(state, drone_origin)
+            return neighbours
     
     @staticmethod
     def str_to_zone(state: State, zone_name: str) -> Zone:
@@ -84,6 +86,8 @@ class StateProcessor(AbstractStateProcessor):
                 for name in connection.zones:
                     if name != current_zone.name:
                         available_zones.append(StateProcessor.str_to_zone(state, name))
+        # for z in available_zones:
+        #     print(z)
 
         return available_zones
 
@@ -162,20 +166,27 @@ class StateProcessor(AbstractStateProcessor):
     @staticmethod
     def get_shortest_path(state: State, drone_name: str) -> Zone | Connection:
         available_zones = StateProcessor.get_next_zones(state, drone_name)
-        return random.choice(available_zones)
+        sort = sorted(available_zones, key=lambda z: StateProcessor.calculate_distance_from_end(state, z))
+
+        return sort[0]
 
     @staticmethod
-    def calculate_distance_from_end(state: State, zone: Zone, visited: set[Zone] = set(), cost: int = 0) -> int:
+    def calculate_distance_from_end(state: State, zone: Zone, visited: set[Zone] = None, cost: int = 0) -> int:
+        if visited is None:
+            visited = set()
+
+        # Final case
         if zone.is_end:
             return cost
 
-        # List of neighbour zones
-        neighbours = []
-        for neighbour in StateProcessor.get_neighbour_zones(state, zone):
-            if neighbour.name not in visited:
-                n_cost = StateProcessor.calculate_distance_from_end(state, neighbour, visited.union({neighbour.name}), cost + 1)
-                if n_cost is not None:
-                    neighbours.append({
-                        'name': neighbour.name,
-                        'cost': n_cost
-                    })
+        # Mark current zone as visited
+        visited.add(zone.name)
+
+        neighbors = StateProcessor.get_neighbour_zones(state, zone)
+        distances = []
+
+        for neighbor in neighbors:
+            if neighbor.name not in visited:
+                distances.append(StateProcessor.calculate_distance_from_end(state, neighbor, visited, cost + 1))
+        
+        return (min(distances) if distances else math.inf)

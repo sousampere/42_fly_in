@@ -91,7 +91,6 @@ class StateVisualizer(AbstractStateVisualizer):
                         # print(zones)
                         # processor.move_drone(state, 'D1', zones[0])
                         state = processor.process(state)
-                        print(processor.calculate_distance_from_end(state, state.zones[4]))
 
     @staticmethod
     def create_background(texture: pygame.Surface, sizes: tuple):

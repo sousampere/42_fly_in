@@ -123,6 +123,6 @@ class ConfigParser:
                             max_link_capacity = int(line.split('[')[1].strip('\n[]').split('=')[1])
                         except Exception:
                             raise ConfigError(f'Invalid max_link_capacity at line {line}')
-                connections.append(Connection(zones=[connection[0], connection[1]],
-                                              max_link_capacity=max_link_capacity))
+                connect = Connection(zones=[connection[0], connection[1]], max_link_capacity=max_link_capacity)
+                connections.append(connect)
         return connections
