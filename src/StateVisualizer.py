@@ -1,6 +1,7 @@
 
 
 from abc import ABC, abstractmethod
+from multiprocessing import process
 import random
 
 from pygame.cursors import arrow
@@ -86,9 +87,12 @@ class StateVisualizer(AbstractStateVisualizer):
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if arrow_rect.collidepoint(event.pos):
                         print('Processing next round')
-                        state = processor.move_drone(state, 'D1', random.choice(state.zones))
-                        print(StateProcessor.get_next_zones(state, 'D1'))
-    
+                        # zones = processor.get_next_zones(state, 'D1')
+                        # print(zones)
+                        # processor.move_drone(state, 'D1', zones[0])
+                        state = processor.process(state)
+                        print(processor.calculate_distance_from_end(state, state.zones[4]))
+
     @staticmethod
     def create_background(texture: pygame.Surface, sizes: tuple):
         WIDTH, HEIGHT, ZONE_RADIUS = sizes
