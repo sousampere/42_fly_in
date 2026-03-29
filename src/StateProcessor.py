@@ -3,6 +3,7 @@ from functools import lru_cache
 import math
 import random
 from typing import Any, Generator
+from collections import deque
 
 from src.MapState.Connection import Connection
 from src.MapState.Drone import Drone
@@ -195,25 +196,30 @@ class StateProcessor(AbstractStateProcessor):
         return sort[0]
 
     @staticmethod
-    def calculate_distance_from_end(state: State, zone: Zone, visited: set[Zone] = None, cost: int = 0) -> int:
+    @lru_cache
+    def calculate_distance_from_end(state: State, zone: Zone, visited: list[Zone] = None, cost: int = 0) -> int:
         if visited is None:
-            visited = set()
+            visited = list()
 
         # Final case
         if zone.is_end:
             return cost
 
         # Mark current zone as visited
-        visited.add(zone.name)
+        visited.append(zone.name)
 
         neighbors = StateProcessor.get_neighbour_zones(state, zone)
         distances = []
 
         for neighbor in neighbors:
             if neighbor.name not in visited and neighbor.zone_type != ZoneType.BLOCKED:
-                distances.append(StateProcessor.calculate_distance_from_end(state, neighbor, visited.copy(), cost + 1))
+                if neighbor.zone_type == ZoneType.RESTRICTED:
+                    distances.append(StateProcessor.calculate_distance_from_end(state, neighbor, visited.copy(), cost + 2))
+                else:
+                    distances.append(StateProcessor.calculate_distance_from_end(state, neighbor, visited.copy(), cost + 1))
 
         return (min(distances) if distances else math.inf)
+
 
     @staticmethod
     def get_drone_last_visided_zone(state: State, drone_name: str) -> list[Any] | None:
