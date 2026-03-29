@@ -6,7 +6,7 @@
 #  By: gtourdia <gtourdia@student.42.fr>         +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/03/12 22:24:12 by gtourdia        #+#    #+#               #
-#  Updated: 2026/03/28 17:16:13 by gtourdia        ###   ########.fr        #
+#  Updated: 2026/03/29 18:49:09 by gtourdia        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -16,7 +16,7 @@ from src.ConfigParser import ConfigParser
 from src.StateVisualizer import StateVisualizer
 
 def main():
-    config_path = 'maps/hard/01_maze_nightmare.txt'
+    config_path = 'maps/challenger/01_the_impossible_dream.txt'
     # config_path = 'maps/medium/03_priority_puzzle.txt'
     
     parser = ConfigParser()

@@ -88,6 +88,11 @@ class StateVisualizer(AbstractStateVisualizer):
                 if event.type == pygame.QUIT:
                     running = False
                 
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE:
+                        state = processor.process(state)
+
+                
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if arrow_rect.collidepoint(event.pos):
                         print('Processing next round')

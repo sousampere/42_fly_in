@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from functools import lru_cache
 import math
 import random
 from typing import Any, Generator
@@ -173,16 +174,24 @@ class StateProcessor(AbstractStateProcessor):
     def get_shortest_path(state: State, drone_name: str) -> Zone | Connection:
         available_zones = StateProcessor.get_next_zones(state, drone_name)
         sort = sorted(available_zones, key=lambda z: StateProcessor.calculate_distance_from_end(state, z))
+        if len(sort) == 0:
+            return None
+
+        # Return a priority zone if its distance is = to the minimum
+        min_distance = StateProcessor.calculate_distance_from_end(state, sort[0])
         for zone in sort:
-            if zone not in StateProcessor.get_drone_last_visided_zone(state, drone_name) \
-            and zone.zone_type == ZoneType.PRIORITY:
-                return zone
+            if isinstance(zone, Zone):
+                if StateProcessor.calculate_distance_from_end(state, zone) == min_distance:
+                    if zone.zone_type == ZoneType.PRIORITY:
+                        return zone
+                else:
+                    break
+
+        for zone in sort:
             if zone in StateProcessor.get_drone_last_visided_zone(state, drone_name) \
                 or zone.zone_type == ZoneType.BLOCKED:
                 sort.remove(zone)
 
-        if len(sort) == 0:
-            return None
         return sort[0]
 
     @staticmethod
@@ -202,10 +211,10 @@ class StateProcessor(AbstractStateProcessor):
 
         for neighbor in neighbors:
             if neighbor.name not in visited and neighbor.zone_type != ZoneType.BLOCKED:
-                distances.append(StateProcessor.calculate_distance_from_end(state, neighbor, visited, cost + 1))
-        
+                distances.append(StateProcessor.calculate_distance_from_end(state, neighbor, visited.copy(), cost + 1))
+
         return (min(distances) if distances else math.inf)
-    
+
     @staticmethod
     def get_drone_last_visided_zone(state: State, drone_name: str) -> list[Any] | None:
         for zone in state.zones:
@@ -226,6 +235,6 @@ class StateProcessor(AbstractStateProcessor):
         """
         for drone in state.drone_names:
             location = StateProcessor.get_drone_location(state, drone)
-            if location is not None and location.is_end != True:
+            if location is not None and location.is_end is not True:
                 return False
         return True
