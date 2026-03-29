@@ -5,6 +5,7 @@ from multiprocessing import process
 import random
 
 from pygame.cursors import arrow
+from pygame.font import Font
 
 from src.StateProcessor import StateProcessor
 from src.MapState.Zone import ZoneType
@@ -22,7 +23,7 @@ class StateVisualizer(AbstractStateVisualizer):
     @staticmethod
     def visualize(state: State):
         pygame.init()
-        WIDTH, HEIGHT = 1200, 800
+        WIDTH, HEIGHT = 2000, 1000
         ZONE_RADIUS = int(min(WIDTH, HEIGHT) * 0.015)
         sizes = (WIDTH, HEIGHT, ZONE_RADIUS)
 
@@ -46,6 +47,9 @@ class StateVisualizer(AbstractStateVisualizer):
         # Create background pattern
         bg = StateVisualizer.create_background(block_tex, sizes)
 
+        # Init font
+        font = pygame.font.Font('assets/font.ttf', 16)
+
         processor = StateProcessor()
 
         clock = pygame.time.Clock()
@@ -64,7 +68,7 @@ class StateVisualizer(AbstractStateVisualizer):
             screen.blit(connections, (0, 0))
 
             # Render zones
-            zones = StateVisualizer.create_zones(state, sizes)
+            zones = StateVisualizer.create_zones(state, sizes, font)
             screen.blit(zones, (0, 0))
 
             # Render drones
@@ -114,7 +118,7 @@ class StateVisualizer(AbstractStateVisualizer):
         return surface
 
     @staticmethod
-    def create_zones(state: State, sizes: tuple):
+    def create_zones(state: State, sizes: tuple, font: Font):
         WIDTH, HEIGHT, ZONE_RADIUS = sizes
         surface = pygame.Surface((WIDTH, HEIGHT)).convert_alpha()
         surface.fill((0,0,0,0))  # Make background transparent
@@ -154,6 +158,12 @@ class StateVisualizer(AbstractStateVisualizer):
             pygame.draw.circle(surface, 'black', (zone_x, zone_y), ZONE_RADIUS + 2)
 
             pygame.draw.circle(surface, color, (zone_x, zone_y), ZONE_RADIUS)
+
+            # Render name of zone
+            zone_name = font.render(zone.name, True, 'white', 'black')
+
+            surface.blit(zone_name, (zone_x - zone_name.get_width() / 2,
+                                     zone_y + 20))
 
         return surface
 
