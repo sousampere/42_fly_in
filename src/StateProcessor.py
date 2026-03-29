@@ -122,6 +122,8 @@ class StateProcessor(AbstractStateProcessor):
             State: New State
         """
         # Check zones for the drone
+        if destination is None:
+            return state
         drone_found = False
         drone_copy = None
         for zone in state.zones:
@@ -178,6 +180,9 @@ class StateProcessor(AbstractStateProcessor):
             if zone in StateProcessor.get_drone_last_visided_zone(state, drone_name) \
                 or zone.zone_type == ZoneType.BLOCKED:
                 sort.remove(zone)
+
+        if len(sort) == 0:
+            return None
         return sort[0]
 
     @staticmethod
