@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 from functools import lru_cache
 import math
 import random
+from re import L
+from sqlite3 import connect
 from typing import Any, Generator
 from collections import deque
 
@@ -32,7 +34,15 @@ class StateProcessor(AbstractStateProcessor):
             return state
 
         for drone_name in state.drone_names:
+            # Get drone location
+            drone_location = StateProcessor.get_drone_location(state, drone_name)
+            if isinstance(drone_location, Connection):
+                # Move drone if it is on a connection
+                next_zone = drone_location.get_drone_next_zone(drone_name)
+                state = StateProcessor.move_drone(state, drone_name, next_zone)
+                return state
             shortest_path = StateProcessor.get_shortest_path(state, drone_name)
+            # shortest_path = StateProcessor.test(state, StateProcessor.get_drone_location(state, drone_name))
             state = StateProcessor.move_drone(state, drone_name, shortest_path)
         return state
 
@@ -123,9 +133,28 @@ class StateProcessor(AbstractStateProcessor):
         Returns:
             State: New State
         """
+        print('Moving drone to ', destination)
         # Check zones for the drone
         if destination is None:
+            print('Destination is NONE !')
             return state
+        
+        current_location = StateProcessor.get_drone_location(state, drone_name)
+        
+        if isinstance(destination, Zone):
+            # If the zone is restricted and the drone is on a zone
+            if destination.zone_type == ZoneType.RESTRICTED \
+                and isinstance(current_location, Zone):
+                # Move to a connection instead
+                for connection in state.connections:
+                    if connection.zones[0] == destination.name and connection.zones[1] == current_location.name \
+                    or connection.zones[1] == destination.name and connection.zones[0] == current_location.name:
+                        return StateProcessor.move_drone(state, drone_name, connection, destination)
+                # Update _future_drones count
+                for zone in state.zones:
+                    if zone.name == destination.name:
+                        zone._future_drones += 1
+
         drone_found = False
         drone_copy = None
         for zone in state.zones:
@@ -137,16 +166,15 @@ class StateProcessor(AbstractStateProcessor):
                         drone_copy.last_visited.append(zone)
                         zone.drones.remove(drone)
                         drone_found = True
-        
-        # Check 
+                        print(f'Drone found in {zone.name}')
+
+        # Remove drone from a connection
         for connection in state.connections:
-            if drone_name in [d['drone'] for d in connection.drones]:
-                # Remove drone
-                for drone_data in connection.drones:
-                    if drone_data['drone'].name == drone_name:
-                        drone_copy = drone_data['drone']
-                        connection.drones.remove(drone_data)
-                        drone_found = True
+            for drone_data in connection.drones:
+                if drone_data['drone'].name == drone_name:
+                    drone_copy = drone_data['drone']
+                    connection.drones.remove(drone_data)
+                    drone_found = True
 
         # Return current state if drone is not found
         if not drone_found:
@@ -157,7 +185,7 @@ class StateProcessor(AbstractStateProcessor):
             for zone in state.zones:
                 if zone.name == destination.name:
                     zone.drones.append(drone_copy)
-        
+
         # Copy drone in connection
         if isinstance(destination, Connection):
             for connection in state.connections:
@@ -174,39 +202,54 @@ class StateProcessor(AbstractStateProcessor):
     @staticmethod
     def get_shortest_path(state: State, drone_name: str) -> Zone | Connection:
         available_zones = StateProcessor.get_next_zones(state, drone_name)
-        sort = sorted(available_zones, key=lambda z: StateProcessor.calculate_distance_from_end(state, z))
+        current_location = StateProcessor.get_drone_location(state, drone_name)
+
+        if isinstance(current_location, Zone) and current_location.is_end:
+            return None
+
+        sort = sorted(available_zones, key=lambda z: StateProcessor.test(state, z))
         if len(sort) == 0:
             return None
 
         # Return a priority zone if its distance is = to the minimum
-        min_distance = StateProcessor.calculate_distance_from_end(state, sort[0])
+        # min_distance = StateProcessor.calculate_distance_from_end(state, sort[0])
+        min_distance = StateProcessor.test(state, sort[0])
         for zone in sort:
             if isinstance(zone, Zone):
-                if StateProcessor.calculate_distance_from_end(state, zone) == min_distance:
+                # if StateProcessor.calculate_distance_from_end(state, zone) == min_distance:
+                if StateProcessor.test(state, zone) == min_distance:
                     if zone.zone_type == ZoneType.PRIORITY:
                         return zone
                 else:
                     break
 
+
         for zone in sort:
             if zone in StateProcessor.get_drone_last_visided_zone(state, drone_name) \
                 or zone.zone_type == ZoneType.BLOCKED:
                 sort.remove(zone)
+        
+        # Remove max capacity zones
+        for zone in sort:
+            if not StateProcessor.check_capacity_allowance(state, current_location, zone):
+                sort.remove(zone)
+
+        if len(sort) == 0:
+            return None
 
         return sort[0]
 
     @staticmethod
-    @lru_cache
-    def calculate_distance_from_end(state: State, zone: Zone, visited: list[Zone] = None, cost: int = 0) -> int:
+    def calculate_distance_from_end(state: State, zone: Zone, visited: set[Zone] = None, cost: int = 0) -> int:
         if visited is None:
-            visited = list()
+            visited = set()
 
         # Final case
         if zone.is_end:
             return cost
 
         # Mark current zone as visited
-        visited.append(zone.name)
+        visited.add(zone.name)
 
         neighbors = StateProcessor.get_neighbour_zones(state, zone)
         distances = []
@@ -219,7 +262,72 @@ class StateProcessor(AbstractStateProcessor):
                     distances.append(StateProcessor.calculate_distance_from_end(state, neighbor, visited.copy(), cost + 1))
 
         return (min(distances) if distances else math.inf)
+    
 
+
+
+    @staticmethod
+    def test(state: State, start_zone: Zone) -> int | float:
+        import math
+        import heapq
+        import itertools
+        # Utilisation d'une file de priorité (min-heap) pour l'algorithme de Dijkstra
+        queue = []
+
+        # Compteur pour départager les zones avec le même coût dans la file de priorité
+        # Cela évite une erreur si Python essaie de comparer deux objets Zone
+        counter = itertools.count() 
+
+        # La file contient des tuples : (coût_cumulé, compteur, zone_actuelle)
+        heapq.heappush(queue, (0, next(counter), start_zone))
+
+        # On remplace le set par un dictionnaire pour mémoriser le coût minimum pour atteindre chaque zone
+        print(start_zone.name)
+        min_costs = {start_zone.name: 0}
+
+        while queue:
+            # On récupère toujours la zone accessible avec le plus petit coût cumulé
+            current_cost, _, current_zone = heapq.heappop(queue)
+
+            # Final case : comme on explore toujours le moins cher en premier, 
+            # si on atteint la fin, c'est garanti d'être le chemin le plus court
+            if current_zone.is_end:
+                return current_cost
+
+            # Optimisation : si on a extrait un chemin obsolète (un meilleur chemin
+            # a été trouvé vers cette zone et ajouté à la file), on l'ignore
+            if current_cost > min_costs.get(current_zone.name, math.inf):
+                continue
+
+            # On récupère les voisins
+            neighbors = StateProcessor.get_neighbour_zones(state, current_zone)
+
+            for neighbor in neighbors:
+                if neighbor.zone_type != ZoneType.BLOCKED:
+                    
+                    # Le nouveau coût est le coût actuel + le coût pour entrer dans le voisin
+                    new_cost = current_cost + StateProcessor.get_cost(state, current_zone, neighbor)
+                    
+                    # Si c'est la première fois qu'on voit ce voisin OU si on a trouvé un chemin moins cher
+                    if new_cost < min_costs.get(neighbor.name, math.inf):
+                        min_costs[neighbor.name] = new_cost
+                        
+                        # On ajoute le voisin à la file avec son nouveau coût cumulé
+                        heapq.heappush(queue, (new_cost, next(counter), neighbor))
+
+        # Si la file se vide sans trouver la fin, c'est un cul-de-sac
+        return math.inf
+
+    @staticmethod
+    def get_cost(state: State, zone_1: Zone, zone_2: Zone) -> int:
+        for connection in state.connections:
+            if zone_1.name in connection.zones:
+                if zone_2.name in connection.zones:
+                    return connection.cost
+            if zone_2.name in connection.zones:
+                if zone_1.name in connection.zones:
+                    return connection.cost
+        return None
 
     @staticmethod
     def get_drone_last_visided_zone(state: State, drone_name: str) -> list[Any] | None:
@@ -241,6 +349,38 @@ class StateProcessor(AbstractStateProcessor):
         """
         for drone in state.drone_names:
             location = StateProcessor.get_drone_location(state, drone)
+            if isinstance(location, Connection):
+                return False
             if location is not None and location.is_end is not True:
                 return False
+        return True
+
+    @staticmethod
+    def get_zone_connection(state: State, zone_1: Zone, zone_2: Zone):
+        for connection in state.connections:
+            if connection.zones[0] == zone_1.name and connection.zones[1] == zone_2.name \
+            or connection.zones[1] == zone_2.name and connection.zones[0] == zone_1.name:
+                return connection
+        return None
+
+    @staticmethod
+    def check_capacity_allowance(state: State, location: Zone, destination: Zone) -> bool:
+        connection = StateProcessor.get_zone_connection(state, location, destination)
+
+        # Connection not found
+        if connection is None:
+            return True
+
+        # Connection.
+        if destination.is_end:
+            return True
+
+        # Check connection max_link_capacity
+        print('Check', len(connection.drones), connection.max_link_capacity)
+        if len(connection.drones) == connection.max_link_capacity:
+            return False
+
+        if destination.max_drones == len(destination.drones) + destination._future_drones:
+            return False
+        
         return True

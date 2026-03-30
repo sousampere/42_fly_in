@@ -13,6 +13,15 @@ class Connection(BaseModel):
     # ]
     max_link_capacity: int = Field(default=1)
     cost: int = Field(default=1)
+    moving: int = Field(default=0)
 
     def __str__(self) -> str:
-        return f'{self.zones[0]}<->{self.zones[1]} max:{self.max_link_capacity}'
+        return f'{self.zones[0]}<->{self.zones[1]} max:{self.max_link_capacity}, {'/'.join(d['drone'].name for d in self.drones)}'
+
+    def get_drone_next_zone(self, drone_name: str) -> Zone:
+        for drone in self.drones:
+            print('name', drone_name)
+            print('current', drone['drone'])
+            if drone['drone'].name == drone_name:
+                return drone['going_to']
+        return None

@@ -45,4 +45,4 @@ class Zone(BaseModel):
         f'of type {self.zone_type.value}'
     
     def __hash__(self):
-        return hash(self.name)
+        return hash(self.name + ''.join([d.name for d in self.drones]) + str(self._future_drones))

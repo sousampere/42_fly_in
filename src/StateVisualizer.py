@@ -1,6 +1,7 @@
 
 
 from abc import ABC, abstractmethod
+import copy
 from multiprocessing import process
 import random
 
@@ -26,6 +27,8 @@ class StateVisualizer(AbstractStateVisualizer):
         WIDTH, HEIGHT = 2000, 1000
         ZONE_RADIUS = int(min(WIDTH, HEIGHT) * 0.015)
         sizes = (WIDTH, HEIGHT, ZONE_RADIUS)
+        save_state = copy.deepcopy(state)
+        turns = 0
 
         # Create screen
         screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -49,6 +52,7 @@ class StateVisualizer(AbstractStateVisualizer):
 
         # Init font
         font = pygame.font.Font('assets/font.ttf', 16)
+
 
         processor = StateProcessor()
 
@@ -78,6 +82,14 @@ class StateVisualizer(AbstractStateVisualizer):
             # Render arrow
             screen.blit(arrow_tex, (0, 0))
 
+            # Render controls
+            controls = StateVisualizer.create_controls(sizes, font)
+            screen.blit(controls, (arrow_tex.get_width() + 20, 0))
+
+            # Render turns counter
+            turns_text = font.render(str(turns), True, 'green')
+            screen.blit(turns_text, (0, 0))
+
             # Update screen
             pygame.display.flip()
             clock.tick(60)  # Max 60 fps
@@ -90,17 +102,27 @@ class StateVisualizer(AbstractStateVisualizer):
                 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_SPACE:
-                        state = processor.process(state)
-
-                
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    if arrow_rect.collidepoint(event.pos):
-                        print('Processing next round')
-                        # zones = processor.get_next_zones(state, 'D1')
-                        # print(zones)
-                        # processor.move_drone(state, 'D1', zones[0])
+                        turns += 1
                         state = processor.process(state)
                         if processor.is_completed(state):
+                            turns -= 1
+                            print('COMPLETED !')
+
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        turns = 0
+                        state = copy.deepcopy(save_state)
+
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if arrow_rect.collidepoint(event.pos):
+                        print('--- Processing next round ---')
+                        # zones = processor.get_next_zones(state, 'D1')
+                        # print(zones)
+                        state = processor.process(state)
+                        print('Drones in zone 0: ',state.zones[0].drones)
+                        print('Drones in zone 1: ',state.zones[1].drones)
+                        if processor.is_completed(state):
+                            turns -= 1
                             print('COMPLETED !')
 
     @staticmethod
@@ -140,7 +162,7 @@ class StateVisualizer(AbstractStateVisualizer):
             ) / (x_max - x_min) + WIDTH * ((1 - width_padding_percent) / 2)
             zone_y = (zone.y - (y_min)) * (
                 HEIGHT * height_padding_percent
-            ) / (y_max - y_min) + HEIGHT * (
+            ) / max(1, (y_max - y_min)) + HEIGHT * (
                 (1 - height_padding_percent) / 2
             )
 
@@ -157,6 +179,8 @@ class StateVisualizer(AbstractStateVisualizer):
                 outline = 'green'
             else:
                 outline = 'blue'
+            if zone.is_end:
+                outline = 'yellow'
 
             pygame.draw.circle(surface, 'black', (zone_x, zone_y), ZONE_RADIUS + 5)
             pygame.draw.circle(surface, outline, (zone_x, zone_y), ZONE_RADIUS + 4)
@@ -164,11 +188,16 @@ class StateVisualizer(AbstractStateVisualizer):
 
             pygame.draw.circle(surface, color, (zone_x, zone_y), ZONE_RADIUS)
 
-            # Render name of zone
-            zone_name = font.render(zone.name, True, 'white', 'black')
 
-            surface.blit(zone_name, (zone_x - zone_name.get_width() / 2,
-                                     zone_y + 20))
+            # Render name of zone
+            zone_name = font.render(f'{zone.name} ({len(zone.drones)}/{zone.max_drones})', True, 'white', 'black')
+
+            if zone.x % 2 == 0:
+                surface.blit(zone_name, (zone_x - zone_name.get_width() / 2,
+                                        zone_y - (20 + zone_name.get_height())))
+            else:
+                surface.blit(zone_name, (zone_x - zone_name.get_width() / 2,
+                                        zone_y + 20))
 
         return surface
 
@@ -193,7 +222,7 @@ class StateVisualizer(AbstractStateVisualizer):
                     ) / (x_max - x_min) + WIDTH * ((1 - width_padding_percent) / 2)
                     zone_y = (zone.y - (y_min)) * (
                         HEIGHT * height_padding_percent
-                    ) / (y_max - y_min) + HEIGHT * (
+                    ) / max(1, (y_max - y_min)) + HEIGHT * (
                         (1 - height_padding_percent) / 2
                     )
                     zone_1 = (zone_x, zone_y)
@@ -204,7 +233,7 @@ class StateVisualizer(AbstractStateVisualizer):
                     ) / (x_max - x_min) + WIDTH * ((1 - width_padding_percent) / 2)
                     zone_y = (zone.y - (y_min)) * (
                         HEIGHT * height_padding_percent
-                    ) / (y_max - y_min) + HEIGHT * (
+                    ) / max(1, (y_max - y_min)) + HEIGHT * (
                         (1 - height_padding_percent) / 2
                     )
                     zone_2 = (zone_x, zone_y)
@@ -231,7 +260,7 @@ class StateVisualizer(AbstractStateVisualizer):
                 ) / (x_max - x_min) + WIDTH * ((1 - width_padding_percent) / 2)
                 drone_y = (zone.y - (y_min)) * (
                     HEIGHT * height_padding_percent
-                ) / (y_max - y_min) + HEIGHT * (
+                ) / max(1, (y_max - y_min)) + HEIGHT * (
                     (1 - height_padding_percent) / 2
                 )
                 drone_coords = (drone_x - 10 + local_random.choice(range(-10, 10)),
@@ -272,4 +301,33 @@ class StateVisualizer(AbstractStateVisualizer):
 
                 surface.blit(drone_tex, drone_coords)
 
+        return surface
+    
+    def create_controls(sizes: tuple, font: Font):
+        WIDTH, HEIGHT, ZONE_RADIUS = sizes
+        surface = pygame.Surface((WIDTH, HEIGHT)).convert_alpha()
+        surface.fill((0,0,0,0))  # Make background transparent
+        controls = [
+                    {
+                        'name': 'Reset simulation',
+                        'key_name': 'ESCAPE  ',
+                        'key': pygame.K_ESCAPE
+                    },
+                    {
+                        'name': 'Next turn',
+                        'key_name': 'SPACE  ',
+                        'key': pygame.K_SPACE
+                    }
+                ]
+        width_sum = 0
+
+        for control in controls:
+            key = font.render(f'{control['key_name']}', True, 'yellow', 'black')
+            text = font.render(f'{control['name']}', True, 'white', 'black')
+            surface.blit(key, (width_sum, 0))
+            width_sum += key.get_width()
+            surface.blit(text, (width_sum, 0))
+            width_sum += text.get_width()
+            width_sum += 20
+        
         return surface
