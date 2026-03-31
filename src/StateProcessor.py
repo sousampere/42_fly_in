@@ -1,8 +1,13 @@
 from abc import ABC, abstractmethod
+from copy import deepcopy
+from faulthandler import is_enabled
 import math
 from re import L
 from typing import Any, Generator
 from collections import deque
+from unittest.util import sorted_list_difference
+
+from mypy.types import read_type
 
 from src.MapState.Connection import Connection
 from src.MapState.Drone import Drone
@@ -29,6 +34,9 @@ class StateProcessor(AbstractStateProcessor):
     def process(state: State) -> State:
         if StateProcessor.is_completed(state):
             return state
+        
+        # print(StateProcessor.is_dead_end(state, state.zones[0], state.zones[7]))
+        # print(StateProcessor.is_dead_end(state, state.zones[0], state.zones[1]))
 
         for drone_name in state.drone_names:
             # Get drone location
@@ -93,7 +101,7 @@ class StateProcessor(AbstractStateProcessor):
 
     @staticmethod
     def get_neighbour_zones(state: State, current_zone: Zone) -> list[Zone]:
-        available_zones = []
+        available_zones: list[Zone] = []
         # Check all connections
         for connection in state.connections:
             # Check if there is the zone in it
@@ -157,7 +165,8 @@ class StateProcessor(AbstractStateProcessor):
                 for zone in state.zones:
                     if zone.name == destination.name:
                         zone._future_drones += 1
-                # Move to a connection instead
+
+                # Move to the connection instead
                 for connection in state.connections:
                     if connection.zones[0] == destination.name and connection.zones[1] == current_location.name \
                     or connection.zones[1] == destination.name and connection.zones[0] == current_location.name:
@@ -218,6 +227,10 @@ class StateProcessor(AbstractStateProcessor):
         available_zones = StateProcessor.get_next_zones(state, drone_name)
         current_location = StateProcessor.get_drone_location(state, drone_name)
 
+        for zone in available_zones:
+            if zone.is_end:
+                return zone
+
         # Ignore if drone on END zone
         if isinstance(current_location, Zone) and current_location.is_end:
             return None
@@ -225,15 +238,27 @@ class StateProcessor(AbstractStateProcessor):
         sort = sorted(available_zones, key=lambda z: StateProcessor.test(state, z))
         if len(sort) == 0:
             return None
-        
+        min_distance = StateProcessor.test(state, sort[0])
+
         # Remove unusable paths to zones
         for zone in sort:
             if not StateProcessor.check_capacity_allowance(state, current_location, zone):
                 sort.remove(zone)
-
+        
         for zone in sort:
             if zone in StateProcessor.get_drone_last_visided_zone(state, drone_name) \
                 or zone.zone_type == ZoneType.BLOCKED:
+                sort.remove(zone)
+
+        # Prevent going to zones where there will not be enough spaces
+        for zone in sort:
+            if len(zone.drones) + zone._future_drones == zone.max_drones and not zone.is_end:
+                sort.remove(zone)
+        
+        # Prevent "dead-ends"
+        for zone in sort:
+            if StateProcessor.is_dead_end(state, current_location, zone):
+                print(f'Drone {drone_name}, {zone} is dead end')
                 sort.remove(zone)
 
         if len(sort) == 0:
@@ -241,7 +266,6 @@ class StateProcessor(AbstractStateProcessor):
 
         # Return a priority zone if its distance is = to the minimum
         # min_distance = StateProcessor.calculate_distance_from_end(state, sort[0])
-        min_distance = StateProcessor.test(state, sort[0])
         for zone in sort:
             if isinstance(zone, Zone):
                 # if StateProcessor.calculate_distance_from_end(state, zone) == min_distance:
@@ -250,7 +274,13 @@ class StateProcessor(AbstractStateProcessor):
                         return zone
                 else:
                     break
+        
+        print(f'---- Drone {drone_name} has best route at {sort[0]}')
 
+        if StateProcessor.test(state, sort[0]) > min_distance:
+            return None
+
+        # print(f'Shortest path for {drone_name}: {sort[0]}')
         return sort[0]
 
     @staticmethod
@@ -397,3 +427,29 @@ class StateProcessor(AbstractStateProcessor):
             return False
 
         return True
+
+    @staticmethod
+    def is_dead_end(state: State, location: Zone, destination: Zone, previous_zones: list[Zone] = None) -> bool:
+        # neighbors = StateProcessor.get_neighbour_zones(state, destination)
+
+        # print('testing dead end')
+
+        # if destination.is_end:
+        #     return False
+
+        # if previous_zones is None:
+        #     previous_zones = []
+
+        # previous_zones.append(location)
+
+        # neighbors = [n for n in neighbors if n.name not in [pre.name for pre in previous_zones]]
+
+        # if len(neighbors) == 0:
+        #     return True
+
+        # for neighbor in neighbors:
+        #     if not StateProcessor.is_dead_end(state, destination, neighbor, deepcopy(previous_zones)):
+        #         return False
+
+        # return True
+        return False

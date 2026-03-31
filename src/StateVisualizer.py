@@ -31,7 +31,7 @@ class StateVisualizer(AbstractStateVisualizer):
         turns = 0
 
         # Create screen
-        screen = pygame.display.set_mode((WIDTH, HEIGHT))
+        screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
 
         # Load textures
         block_tex = pygame.image.load('assets/dirt.bmp').convert()
@@ -48,7 +48,6 @@ class StateVisualizer(AbstractStateVisualizer):
         arrow_rect = arrow_tex.get_rect(topleft=(0, 0))
 
         # Create background pattern
-        bg = StateVisualizer.create_background(block_tex, sizes)
 
         # Init font
         font = pygame.font.Font('assets/font.ttf', 16)
@@ -59,8 +58,11 @@ class StateVisualizer(AbstractStateVisualizer):
         clock = pygame.time.Clock()
         running = True
         while running:
+            sizes = pygame.display.get_surface().get_size()
+            sizes = (sizes[0], sizes[1], ZONE_RADIUS)
 
             # Render background
+            bg = StateVisualizer.create_background(block_tex, sizes)
             screen.blit(bg, (0,0))
 
             # Apply soft shadow filter
