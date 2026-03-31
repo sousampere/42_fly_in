@@ -112,10 +112,7 @@ class StateVisualizer(AbstractStateVisualizer):
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if arrow_rect.collidepoint(event.pos):
-                        print('--- Processing next round ---')
                         state = processor.process(state)
-                        print('Drones in zone 0: ',state.zones[0].drones)
-                        print('Drones in zone 1: ',state.zones[1].drones)
                         turns += 1
 
     @staticmethod

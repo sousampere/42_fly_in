@@ -20,8 +20,6 @@ class Connection(BaseModel):
 
     def get_drone_next_zone(self, drone_name: str) -> Zone:
         for drone in self.drones:
-            print('name', drone_name)
-            print('current', drone['drone'])
             if drone['drone'].name == drone_name:
                 return drone['going_to']
         return None

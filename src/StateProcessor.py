@@ -40,6 +40,8 @@ class StateProcessor(AbstractStateProcessor):
             else:
                 shortest_path = StateProcessor.get_shortest_path(state, drone_name)
                 state = StateProcessor.move_drone(state, drone_name, shortest_path)
+
+        # Reset moving counter for each connection
         for connection in state.connections:
             connection.moving = len(connection.drones)
         return state
@@ -95,6 +97,7 @@ class StateProcessor(AbstractStateProcessor):
         # Check all connections
         for connection in state.connections:
             # Check if there is the zone in it
+            # if current_zone.name in connection.zones and connection.moving < connection.max_link_capacity:
             if current_zone.name in connection.zones:
                 for name in connection.zones:
                     if name != current_zone.name:
@@ -131,13 +134,13 @@ class StateProcessor(AbstractStateProcessor):
         Returns:
             State: New State
         """
-        print('Moving drone to ', destination)
         # Check zones for the drone
         if destination is None:
-            print('Destination is NONE !')
             return state
         
         current_location = StateProcessor.get_drone_location(state, drone_name)
+
+
         # Update Connection.moving
         if isinstance(destination, Zone):
             if isinstance(current_location, Zone):
@@ -159,6 +162,11 @@ class StateProcessor(AbstractStateProcessor):
                     if connection.zones[0] == destination.name and connection.zones[1] == current_location.name \
                     or connection.zones[1] == destination.name and connection.zones[0] == current_location.name:
                         return StateProcessor.move_drone(state, drone_name, connection, destination)
+
+        if isinstance(destination, Zone) and destination.zone_type == ZoneType.RESTRICTED and isinstance(current_location, Connection):
+            for zone in state.zones:
+                if zone.name == destination.name:
+                    zone._future_drones -= 1
 
         drone_found = False
         drone_copy = None
@@ -201,6 +209,7 @@ class StateProcessor(AbstractStateProcessor):
                         }
                     )
                     connection.moving += 1
+
 
         return state
 
@@ -380,9 +389,11 @@ class StateProcessor(AbstractStateProcessor):
         if destination.is_end:
             return True
 
-        if destination.max_drones == len(destination.drones) + destination._future_drones \
-            or connection.moving == connection.max_link_capacity:
-            print(connection.moving, connection.max_link_capacity)
+        # Don't exceed the max_drone_capacity
+        if destination.max_drones == len(destination.drones) + destination._future_drones:
+            return False
+        
+        if connection.moving >= connection.max_link_capacity:
             return False
 
         return True
