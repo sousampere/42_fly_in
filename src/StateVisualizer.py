@@ -102,11 +102,8 @@ class StateVisualizer(AbstractStateVisualizer):
                 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_SPACE:
-                        turns += 1
                         state = processor.process(state)
-                        if processor.is_completed(state):
-                            turns -= 1
-                            print('COMPLETED !')
+                        turns += 1
 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
@@ -116,15 +113,10 @@ class StateVisualizer(AbstractStateVisualizer):
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if arrow_rect.collidepoint(event.pos):
                         print('--- Processing next round ---')
-                        # zones = processor.get_next_zones(state, 'D1')
-                        # print(zones)
-                        turns += 1
                         state = processor.process(state)
                         print('Drones in zone 0: ',state.zones[0].drones)
                         print('Drones in zone 1: ',state.zones[1].drones)
-                        if processor.is_completed(state):
-                            turns -= 1
-                            print('COMPLETED !')
+                        turns += 1
 
     @staticmethod
     def create_background(texture: pygame.Surface, sizes: tuple):

@@ -150,15 +150,15 @@ class StateProcessor(AbstractStateProcessor):
             # If the zone is restricted and the drone is on a zone
             if destination.zone_type == ZoneType.RESTRICTED \
                 and isinstance(current_location, Zone):
+                # Update _future_drones count
+                for zone in state.zones:
+                    if zone.name == destination.name:
+                        zone._future_drones += 1
                 # Move to a connection instead
                 for connection in state.connections:
                     if connection.zones[0] == destination.name and connection.zones[1] == current_location.name \
                     or connection.zones[1] == destination.name and connection.zones[0] == current_location.name:
                         return StateProcessor.move_drone(state, drone_name, connection, destination)
-                # Update _future_drones count
-                for zone in state.zones:
-                    if zone.name == destination.name:
-                        zone._future_drones += 1
 
         drone_found = False
         drone_copy = None
@@ -200,6 +200,7 @@ class StateProcessor(AbstractStateProcessor):
                             'going_to': going_to
                         }
                     )
+                    connection.moving += 1
 
         return state
 
@@ -215,6 +216,19 @@ class StateProcessor(AbstractStateProcessor):
         sort = sorted(available_zones, key=lambda z: StateProcessor.test(state, z))
         if len(sort) == 0:
             return None
+        
+        # Remove unusable paths to zones
+        for zone in sort:
+            if not StateProcessor.check_capacity_allowance(state, current_location, zone):
+                sort.remove(zone)
+
+        for zone in sort:
+            if zone in StateProcessor.get_drone_last_visided_zone(state, drone_name) \
+                or zone.zone_type == ZoneType.BLOCKED:
+                sort.remove(zone)
+
+        if len(sort) == 0:
+            return None
 
         # Return a priority zone if its distance is = to the minimum
         # min_distance = StateProcessor.calculate_distance_from_end(state, sort[0])
@@ -227,20 +241,6 @@ class StateProcessor(AbstractStateProcessor):
                         return zone
                 else:
                     break
-
-
-        for zone in sort:
-            if zone in StateProcessor.get_drone_last_visided_zone(state, drone_name) \
-                or zone.zone_type == ZoneType.BLOCKED:
-                sort.remove(zone)
-        
-        # Remove unusable paths to zones
-        for zone in sort:
-            if not StateProcessor.check_capacity_allowance(state, current_location, zone):
-                sort.remove(zone)
-
-        if len(sort) == 0:
-            return None
 
         return sort[0]
 
