@@ -6,7 +6,7 @@
 #  By: gtourdia <gtourdia@student.42.fr>         +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/03/12 22:24:12 by gtourdia        #+#    #+#               #
-#  Updated: 2026/03/30 16:18:41 by gtourdia        ###   ########.fr        #
+#  Updated: 2026/03/30 17:03:58 by gtourdia        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -41,7 +41,6 @@ def main():
     # state = StateProcessor.move_drone(state, 'D1', state.connections[0], state.zones[1])
     # state = processor.move_drone(state, 'D1', state.zones[1], going_to=state.zones[0])
     # print(processor.calculate_shortest_path(state, 'D1'))
-    print(state.connections[0])
     # state.connections[1].drones.append(Drone(name='danny'))
 
     visu = StateVisualizer()

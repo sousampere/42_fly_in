@@ -1,9 +1,6 @@
 from abc import ABC, abstractmethod
-from functools import lru_cache
 import math
-import random
 from re import L
-from sqlite3 import connect
 from typing import Any, Generator
 from collections import deque
 
@@ -40,10 +37,12 @@ class StateProcessor(AbstractStateProcessor):
                 # Move drone if it is on a connection
                 next_zone = drone_location.get_drone_next_zone(drone_name)
                 state = StateProcessor.move_drone(state, drone_name, next_zone)
-                return state
-            shortest_path = StateProcessor.get_shortest_path(state, drone_name)
-            # shortest_path = StateProcessor.test(state, StateProcessor.get_drone_location(state, drone_name))
-            state = StateProcessor.move_drone(state, drone_name, shortest_path)
+            else:
+                shortest_path = StateProcessor.get_shortest_path(state, drone_name)
+                state = StateProcessor.move_drone(state, drone_name, shortest_path)
+        for connection in state.connections:
+            connection.moving = 0
+        print(state.connections[0].moving)
         return state
 
     @staticmethod
@@ -140,6 +139,13 @@ class StateProcessor(AbstractStateProcessor):
             return state
         
         current_location = StateProcessor.get_drone_location(state, drone_name)
+        
+        # Update Connection.moving
+        if isinstance(destination, Zone):
+            if isinstance(current_location, Zone):
+                connection = StateProcessor.get_zone_connection(state, destination, current_location)
+                for connection in state.connections:
+                    connection.moving += 1 
         
         if isinstance(destination, Zone):
             # If the zone is restricted and the drone is on a zone
@@ -375,12 +381,13 @@ class StateProcessor(AbstractStateProcessor):
         if destination.is_end:
             return True
 
+
+        print(connection.moving, connection.max_link_capacity)
         # Check connection max_link_capacity
-        print('Check', len(connection.drones), connection.max_link_capacity)
-        if len(connection.drones) == connection.max_link_capacity:
+        if connection.moving == connection.max_link_capacity:
             return False
 
         if destination.max_drones == len(destination.drones) + destination._future_drones:
             return False
-        
+
         return True

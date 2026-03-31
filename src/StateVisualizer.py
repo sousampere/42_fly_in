@@ -68,7 +68,7 @@ class StateVisualizer(AbstractStateVisualizer):
             screen.blit(shadow, (0, 0))
 
             # Render Connections
-            connections = StateVisualizer.create_connections(state, sizes)
+            connections = StateVisualizer.create_connections(state, sizes, font)
             screen.blit(connections, (0, 0))
 
             # Render zones
@@ -118,6 +118,7 @@ class StateVisualizer(AbstractStateVisualizer):
                         print('--- Processing next round ---')
                         # zones = processor.get_next_zones(state, 'D1')
                         # print(zones)
+                        turns += 1
                         state = processor.process(state)
                         print('Drones in zone 0: ',state.zones[0].drones)
                         print('Drones in zone 1: ',state.zones[1].drones)
@@ -202,7 +203,7 @@ class StateVisualizer(AbstractStateVisualizer):
         return surface
 
     @staticmethod
-    def create_connections(state: State, sizes: tuple):
+    def create_connections(state: State, sizes: tuple, font: Font):
         WIDTH, HEIGHT, ZONE_RADIUS = sizes
         surface = pygame.Surface((WIDTH, HEIGHT)).convert_alpha()
         surface.fill((0,0,0,0))  # Make background transparent
@@ -239,6 +240,10 @@ class StateVisualizer(AbstractStateVisualizer):
                     zone_2 = (zone_x, zone_y)
                 if zone_1 is not None and zone_2 is not None:
                     pygame.draw.line(surface, 'white', zone_1, zone_2, width=5)
+                    text_surface = font.render(str(connection.moving), True, 'white')
+                    text_coords = ((max(zone_1[0], zone_2[0]) + min(zone_1[0], zone_2[0])) / 2,
+                                   (max(zone_1[1], zone_2[1]) + min(zone_1[1], zone_2[1])) / 2)
+                    surface.blit(text_surface, text_coords)
         return surface
 
     @staticmethod
