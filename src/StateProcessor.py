@@ -41,8 +41,7 @@ class StateProcessor(AbstractStateProcessor):
                 shortest_path = StateProcessor.get_shortest_path(state, drone_name)
                 state = StateProcessor.move_drone(state, drone_name, shortest_path)
         for connection in state.connections:
-            connection.moving = 0
-        print(state.connections[0].moving)
+            connection.moving = len(connection.drones)
         return state
 
     @staticmethod
@@ -139,13 +138,13 @@ class StateProcessor(AbstractStateProcessor):
             return state
         
         current_location = StateProcessor.get_drone_location(state, drone_name)
-        
         # Update Connection.moving
         if isinstance(destination, Zone):
             if isinstance(current_location, Zone):
-                connection = StateProcessor.get_zone_connection(state, destination, current_location)
+                zone_connection = StateProcessor.get_zone_connection(state, destination, current_location)
                 for connection in state.connections:
-                    connection.moving += 1 
+                    if connection.zones[0] == zone_connection.zones[0] and connection.zones[1] == zone_connection.zones[1]:
+                        connection.moving += 1
         
         if isinstance(destination, Zone):
             # If the zone is restricted and the drone is on a zone
@@ -172,7 +171,6 @@ class StateProcessor(AbstractStateProcessor):
                         drone_copy.last_visited.append(zone)
                         zone.drones.remove(drone)
                         drone_found = True
-                        print(f'Drone found in {zone.name}')
 
         # Remove drone from a connection
         for connection in state.connections:
@@ -210,6 +208,7 @@ class StateProcessor(AbstractStateProcessor):
         available_zones = StateProcessor.get_next_zones(state, drone_name)
         current_location = StateProcessor.get_drone_location(state, drone_name)
 
+        # Ignore if drone on END zone
         if isinstance(current_location, Zone) and current_location.is_end:
             return None
 
@@ -235,7 +234,7 @@ class StateProcessor(AbstractStateProcessor):
                 or zone.zone_type == ZoneType.BLOCKED:
                 sort.remove(zone)
         
-        # Remove max capacity zones
+        # Remove unusable paths to zones
         for zone in sort:
             if not StateProcessor.check_capacity_allowance(state, current_location, zone):
                 sort.remove(zone)
@@ -288,7 +287,7 @@ class StateProcessor(AbstractStateProcessor):
         heapq.heappush(queue, (0, next(counter), start_zone))
 
         # On remplace le set par un dictionnaire pour mémoriser le coût minimum pour atteindre chaque zone
-        print(start_zone.name)
+        (start_zone.name)
         min_costs = {start_zone.name: 0}
 
         while queue:
@@ -365,7 +364,7 @@ class StateProcessor(AbstractStateProcessor):
     def get_zone_connection(state: State, zone_1: Zone, zone_2: Zone):
         for connection in state.connections:
             if connection.zones[0] == zone_1.name and connection.zones[1] == zone_2.name \
-            or connection.zones[1] == zone_2.name and connection.zones[0] == zone_1.name:
+            or connection.zones[0] == zone_2.name and connection.zones[1] == zone_1.name:
                 return connection
         return None
 
@@ -381,13 +380,9 @@ class StateProcessor(AbstractStateProcessor):
         if destination.is_end:
             return True
 
-
-        print(connection.moving, connection.max_link_capacity)
-        # Check connection max_link_capacity
-        if connection.moving == connection.max_link_capacity:
-            return False
-
-        if destination.max_drones == len(destination.drones) + destination._future_drones:
+        if destination.max_drones == len(destination.drones) + destination._future_drones \
+            or connection.moving == connection.max_link_capacity:
+            print(connection.moving, connection.max_link_capacity)
             return False
 
         return True
