@@ -23,7 +23,7 @@ class State:
         return f'Containing {len(self.zones)} '\
                'zones and {len(self.connections)} connections.'
 
-    def get_min_max_coords(self):
+    def get_min_max_coords(self) -> tuple[int, int, int, int]:
         # Get max and min coords
         x_min = 0
         x_max = 0

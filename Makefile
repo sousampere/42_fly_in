@@ -57,4 +57,10 @@ drun:
 	uv run python main.py
 
 lint:
-	flake8 src main.py __init__.py
+	uv run -m flake8 src main.py
+	uv run mypy src --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
+
+lindt:
+	@echo "🍫🍫 !!"
+	uv run -m flake8 src main.py
+	uv run mypy src --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs

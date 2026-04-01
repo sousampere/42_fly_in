@@ -1,13 +1,14 @@
 
+from typing import Any
+
 from pydantic import BaseModel, Field
 
-from src.MapState.Drone import Drone
-from src.MapState.Zone import Zone
+# from src.MapState.Drone import Drone
 
 
 class Connection(BaseModel):
     zones: list[str] = []
-    drones: list[dict[str, Drone | Zone]] = []
+    drones: list[Any] = []
     # example: [
     #   {'drone': Drone, 'going_to': Zone}
     # ]
@@ -20,7 +21,7 @@ class Connection(BaseModel):
                f'max:{self.max_link_capacity}, '\
                f'{'/'.join(d['drone'].name for d in self.drones)}'
 
-    def get_drone_next_zone(self, drone_name: str) -> Zone:
+    def get_drone_next_zone(self, drone_name: str) -> Any:
         for drone in self.drones:
             if drone['drone'].name == drone_name:
                 return drone['going_to']

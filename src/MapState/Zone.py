@@ -45,6 +45,6 @@ class Zone(BaseModel):
                f'Color={self.color}, Max_drones={self.max_drones}, '\
                f'of type {self.zone_type.value}'
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.name + ''.join(
             [d.name for d in self.drones]) + str(self._future_drones))

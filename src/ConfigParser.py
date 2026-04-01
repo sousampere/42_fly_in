@@ -63,6 +63,7 @@ class ConfigParser:
 
         return state
 
+    @staticmethod
     def get_drones(lines: List[str]) -> List[Drone]:
         for index, line in enumerate(lines, start=1):
             if line.startswith('nb_drones:'):
@@ -87,9 +88,10 @@ class ConfigParser:
         # No drone line found
         raise ConfigError('Could not find a number of drones in your config')
 
+    @staticmethod
     def get_zones(lines: List[str]) -> List[Zone]:
         """ Returns the parsed result of the list of zones """
-        zones = []
+        zones: list[Zone] = []
         for index, line in enumerate(lines, start=1):
             if line.startswith(('start_hub:', 'hub:', 'end_hub:')):
                 if len(line.split('[')[0].strip().split(' ')) != 4:
@@ -99,7 +101,7 @@ class ConfigParser:
                 y = line.split('[')[0].strip().split(' ')[3]
                 is_end = True if line.startswith('end_hub:') else False
                 is_start = True if line.startswith('start_hub:') else False
-                zone_type = ZoneType.NORMAL
+                zone_type: ZoneType = ZoneType.NORMAL
                 color = 'white'
                 max_drones = 1
 
@@ -111,15 +113,18 @@ class ConfigParser:
                         case 'color':
                             color = metadata.split('=')[1].strip('\n]')
                         case 'zone':
-                            zone_type = metadata.split('=')[1].strip('\n]')
+                            zone_type = ZoneType(
+                                metadata.split('=')[1].strip('\n]'))
                         case 'max_drones':
-                            max_drones = metadata.split('=')[1].strip('\n]')
+                            max_drones = int(
+                                metadata.split('=')[1].strip('\n]'))
 
                 try:
                     if name in [z.name for z in zones]:
                         raise ConfigError('Zone name already'
                                           f' used at line {index}')
-                    zones.append(Zone(name=name, x=x, y=y, is_end=is_end,
+                    zones.append(Zone(name=name, x=int(x), y=int(y),
+                                      is_end=is_end,
                                       color=color, max_drones=max_drones,
                                       zone_type=zone_type, is_start=is_start))
                 except ZoneError as e:
@@ -127,6 +132,7 @@ class ConfigParser:
 
         return zones
 
+    @staticmethod
     def get_connections(lines: list[str]) -> list[Connection]:
         connections = []
         for index, line in enumerate(lines, start=1):
