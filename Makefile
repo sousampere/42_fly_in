@@ -16,15 +16,14 @@ AUTHOR=gtourdia
 PROJECT_NAME=Fly-In
 PROJECT_START_DATE=2026-02-11
 GITHUB=https://github.com/sousampere/
+INPUT=maps/easy/01_linear_path.txt
+
 
 # COLORS
 YELLOW=\033[0;33m
 CYAN=\033[0;36m
 GREEN=\033[0;32m
 RESET=\033[0m
-
-# MAIN VARIABLES
-INTERPRETER			=	python3
 
 install:
 	@printf "\033[2J\033[H"
@@ -48,7 +47,7 @@ install:
 # 	uv sync
 
 run:
-	uv run python main.py
+	uv run python main.py --input $(ARGS)
 
 drun:
 	clear && clear
