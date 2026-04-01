@@ -5,6 +5,7 @@ import copy
 from multiprocessing import process
 import random
 
+from pygame import display
 from pygame.cursors import arrow
 from pygame.font import Font
 
@@ -47,18 +48,23 @@ class StateVisualizer(AbstractStateVisualizer):
             drone_tex = pygame.image.load(path).convert_alpha()
             path = 'assets/arrow.bmp'
             arrow_tex = pygame.image.load(path).convert_alpha()
-            path = 'assets/font.ttf'
+            path = 'assets/success.bmp'
+            success_tex = pygame.image.load(path).convert_alpha()
 
             # Init font
+            path = 'assets/font.ttf'
             font = pygame.font.Font(path, 16)
         except Exception:
             raise AssetsException(f'Your asset folder is missing {path}')
+        
+        display.set_icon(drone_tex)
 
         # Transform texture
         block_tex = pygame.transform.scale(block_tex, (64, 64))
         drone_tex = pygame.transform.scale(drone_tex, (ZONE_RADIUS * 2, ZONE_RADIUS * 2))
         drone_tex = pygame.transform.flip(drone_tex, flip_x=True, flip_y=False)
         arrow_tex = pygame.transform.scale(arrow_tex, (64, 64))
+        success_tex = pygame.transform.scale(success_tex, (200, 120))
 
         # Create area to detect click, based on the arrow's dimensions
         arrow_rect = arrow_tex.get_rect(topleft=(0, 0))
@@ -102,6 +108,10 @@ class StateVisualizer(AbstractStateVisualizer):
             # Render turns counter
             turns_text = font.render(str(turns), True, 'green')
             screen.blit(turns_text, (0, 0))
+
+            if state_ended:
+                success_display = StateVisualizer.create_end(sizes, success_tex)
+                screen.blit(success_display, (0, 0))
 
             # Update screen
             pygame.display.flip()
@@ -316,6 +326,7 @@ class StateVisualizer(AbstractStateVisualizer):
 
         return surface
     
+    @staticmethod
     def create_controls(sizes: tuple, font: Font):
         WIDTH, HEIGHT, ZONE_RADIUS = sizes
         surface = pygame.Surface((WIDTH, HEIGHT)).convert_alpha()
@@ -342,5 +353,15 @@ class StateVisualizer(AbstractStateVisualizer):
             surface.blit(text, (width_sum, 0))
             width_sum += text.get_width()
             width_sum += 20
-        
+
+        return surface
+
+    @staticmethod
+    def create_end(sizes: tuple, success_tex: pygame.Surface):
+        WIDTH, HEIGHT, ZONE_RADIUS = sizes
+        surface = pygame.Surface((WIDTH, HEIGHT)).convert_alpha()
+        surface.fill((0,0,0,0))  # Make background transparent=
+
+        surface.blit(success_tex, (WIDTH - success_tex.get_width() - 50, 0 + 50))
+
         return surface
