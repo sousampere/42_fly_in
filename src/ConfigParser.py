@@ -2,7 +2,6 @@
 
 from copy import deepcopy
 import math
-import stat
 from typing import List
 
 from src.StateProcessor import StateProcessor
@@ -52,10 +51,10 @@ class ConfigParser:
                 start = zone
             if zone.is_end:
                 end = zone
-        
+
         if start is None or end is None:
             raise ConfigError('No start/end zone')
-        
+
         # Verify that the state end is reachable
         try_state = deepcopy(state)
         distance = StateProcessor.test(try_state, start)
@@ -118,7 +117,8 @@ class ConfigParser:
 
                 try:
                     if name in [z.name for z in zones]:
-                        raise ConfigError(f'Zone name already used at line {index}')
+                        raise ConfigError('Zone name already'
+                                          f' used at line {index}')
                     zones.append(Zone(name=name, x=x, y=y, is_end=is_end,
                                       color=color, max_drones=max_drones,
                                       zone_type=zone_type, is_start=is_start))
@@ -126,25 +126,33 @@ class ConfigParser:
                     raise ConfigError(f'Invalid zone at line {index}: {e}')
 
         return zones
-    
+
     def get_connections(lines: list[str]) -> list[Connection]:
         connections = []
         for index, line in enumerate(lines, start=1):
             if line.startswith('connection:'):
                 if len(line.split('[')[0].strip().split(' ')) != 2:
                     raise ConfigError(f'Invalid connection at line {index}')
-                connection = line.split('[')[0].strip().split(' ')[1].split('-')
+                connection = line.split('[')[0].strip().split(' ')[1].split(
+                    '-')
                 if len(connection) != 2:
                     raise ConfigError(f'Invalid connection at line {index}')
                 if connection[0] == connection[1]:
                     raise ConfigError(f'Invalid connection at line {index}')
                 max_link_capacity = 1
                 if len(line.split('[')) == 2:
-                    if line.split('[')[1].strip('\n[]').split('=')[0] == 'max_link_capacity':
+                    if line.split('[')[1].strip('\n[]').split('=')[0] == ''\
+                       'max_link_capacity':
                         try:
-                            max_link_capacity = int(line.split('[')[1].strip('\n[]').split('=')[1])
+                            max_link_capacity = int(
+                                line.split('[')[1].strip('\n[]').split('=')[1])
                         except Exception:
-                            raise ConfigError(f'Invalid max_link_capacity at line {line}')
-                connect = Connection(zones=[connection[0], connection[1]], max_link_capacity=max_link_capacity)
+                            raise ConfigError(
+                                f'Invalid max_link_capacity '
+                                f'at line {line}')
+                connect = Connection(
+                    zones=[connection[0], connection[1]],
+                    max_link_capacity=max_link_capacity)
                 connections.append(connect)
+
         return connections

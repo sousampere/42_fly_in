@@ -10,6 +10,7 @@ from src.MapState.Drone import Drone
 class ZoneError(Exception):
     pass
 
+
 class ZoneNameError(ZoneError):
     pass
 
@@ -41,8 +42,9 @@ class Zone(BaseModel):
 
     def __str__(self) -> str:
         return f'Zone "{self.name}" at ({self.x}, {self.y}), | '\
-        f'Color={self.color}, Max_drones={self.max_drones}, '\
-        f'of type {self.zone_type.value}'
-    
+               f'Color={self.color}, Max_drones={self.max_drones}, '\
+               f'of type {self.zone_type.value}'
+
     def __hash__(self):
-        return hash(self.name + ''.join([d.name for d in self.drones]) + str(self._future_drones))
+        return hash(self.name + ''.join(
+            [d.name for d in self.drones]) + str(self._future_drones))

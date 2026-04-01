@@ -1,6 +1,7 @@
 
 from argparse import ArgumentParser, Namespace
 
+
 def get_arguments() -> Namespace:
     parser = ArgumentParser(
         prog='Fly-in to the moon !',

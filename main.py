@@ -6,7 +6,7 @@
 #  By: gtourdia <gtourdia@student.42.fr>         +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/03/12 22:24:12 by gtourdia        #+#    #+#               #
-#  Updated: 2026/04/01 15:17:03 by gtourdia        ###   ########.fr        #
+#  Updated: 2026/04/01 16:03:03 by gtourdia        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -15,6 +15,7 @@ from pydantic import ValidationError
 from src.misc.arguments import get_arguments
 from src.ConfigParser import ConfigParser
 from src.StateVisualizer import AssetsException, StateVisualizer
+
 
 def main():
 

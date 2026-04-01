@@ -2,11 +2,9 @@
 
 from abc import ABC, abstractmethod
 import copy
-from multiprocessing import process
 import random
 
 from pygame import display
-from pygame.cursors import arrow
 from pygame.font import Font
 
 from src.misc.is_state_solved import is_state_solved
@@ -56,12 +54,13 @@ class StateVisualizer(AbstractStateVisualizer):
             font = pygame.font.Font(path, 16)
         except Exception:
             raise AssetsException(f'Your asset folder is missing {path}')
-        
+
         display.set_icon(drone_tex)
 
         # Transform texture
         block_tex = pygame.transform.scale(block_tex, (64, 64))
-        drone_tex = pygame.transform.scale(drone_tex, (ZONE_RADIUS * 2, ZONE_RADIUS * 2))
+        drone_tex = pygame.transform.scale(drone_tex, (ZONE_RADIUS * 2,
+                                                       ZONE_RADIUS * 2))
         drone_tex = pygame.transform.flip(drone_tex, flip_x=True, flip_y=False)
         arrow_tex = pygame.transform.scale(arrow_tex, (64, 64))
         success_tex = pygame.transform.scale(success_tex, (200, 120))
@@ -80,14 +79,15 @@ class StateVisualizer(AbstractStateVisualizer):
 
             # Render background
             bg = StateVisualizer.create_background(block_tex, sizes)
-            screen.blit(bg, (0,0))
+            screen.blit(bg, (0, 0))
 
             # Apply soft shadow filter
             shadow = StateVisualizer.get_transparency_filter(sizes)
             screen.blit(shadow, (0, 0))
 
             # Render Connections
-            connections = StateVisualizer.create_connections(state, sizes, font)
+            connections = StateVisualizer.create_connections(
+                state, sizes, font)
             screen.blit(connections, (0, 0))
 
             # Render zones
@@ -110,26 +110,25 @@ class StateVisualizer(AbstractStateVisualizer):
             screen.blit(turns_text, (0, 0))
 
             if state_ended:
-                success_display = StateVisualizer.create_end(sizes, success_tex)
+                success_display = StateVisualizer.create_end(sizes,
+                                                             success_tex)
                 screen.blit(success_display, (0, 0))
 
             # Update screen
             pygame.display.flip()
             clock.tick(60)  # Max 60 fps
 
-
             # Events
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
-                
+
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_SPACE and not state_ended:
                         state = processor.process(state)
                         turns += 1
                         if is_state_solved(state):
                             state_ended = True
-
 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
@@ -148,7 +147,7 @@ class StateVisualizer(AbstractStateVisualizer):
     def create_background(texture: pygame.Surface, sizes: tuple):
         WIDTH, HEIGHT, ZONE_RADIUS = sizes
         bg = pygame.Surface((WIDTH, HEIGHT)).convert_alpha()
-        bg.fill((0,0,0,0))
+        bg.fill((0, 0, 0, 0))
         tile_w, tile_h = texture.get_size()
         for x in range(0, WIDTH, tile_w):
             for y in range(0, HEIGHT, tile_h):
@@ -160,17 +159,17 @@ class StateVisualizer(AbstractStateVisualizer):
     def get_transparency_filter(sizes: tuple) -> pygame.Surface:
         WIDTH, HEIGHT, ZONE_RADIUS = sizes
         surface = pygame.Surface((WIDTH, HEIGHT)).convert_alpha()
-        surface.fill((0,0,0,150))  # Make background transparent
+        surface.fill((0, 0, 0, 150))  # Make background transparent
         return surface
 
     @staticmethod
     def create_zones(state: State, sizes: tuple, font: Font):
         WIDTH, HEIGHT, ZONE_RADIUS = sizes
         surface = pygame.Surface((WIDTH, HEIGHT)).convert_alpha()
-        surface.fill((0,0,0,0))  # Make background transparent
+        surface.fill((0, 0, 0, 0))  # Make background transparent
         width_padding_percent = 0.8
         height_padding_percent = 0.7
-        
+
         x_min, x_max, y_min, y_max = state.get_min_max_coords()
 
         # Draw zones
@@ -201,22 +200,27 @@ class StateVisualizer(AbstractStateVisualizer):
             if zone.is_end:
                 outline = 'yellow'
 
-            pygame.draw.circle(surface, 'black', (zone_x, zone_y), ZONE_RADIUS + 5)
-            pygame.draw.circle(surface, outline, (zone_x, zone_y), ZONE_RADIUS + 4)
-            pygame.draw.circle(surface, 'black', (zone_x, zone_y), ZONE_RADIUS + 2)
+            pygame.draw.circle(surface, 'black', (zone_x, zone_y),
+                               ZONE_RADIUS + 5)
+            pygame.draw.circle(surface, outline, (zone_x, zone_y),
+                               ZONE_RADIUS + 4)
+            pygame.draw.circle(surface, 'black', (zone_x, zone_y),
+                               ZONE_RADIUS + 2)
 
             pygame.draw.circle(surface, color, (zone_x, zone_y), ZONE_RADIUS)
 
-
             # Render name of zone
-            zone_name = font.render(f'{zone.name} ({len(zone.drones)}/{zone.max_drones})', True, 'white', 'black')
+            zone_name = font.render(
+                f'{zone.name} ({len(zone.drones)}/{zone.max_drones})',
+                True, 'white', 'black')
 
             if zone.x % 2 == 0:
                 surface.blit(zone_name, (zone_x - zone_name.get_width() / 2,
-                                        zone_y - (20 + zone_name.get_height())))
+                                         zone_y - (
+                                            20 + zone_name.get_height())))
             else:
                 surface.blit(zone_name, (zone_x - zone_name.get_width() / 2,
-                                        zone_y + 20))
+                                         zone_y + 20))
 
         return surface
 
@@ -224,11 +228,11 @@ class StateVisualizer(AbstractStateVisualizer):
     def create_connections(state: State, sizes: tuple, font: Font):
         WIDTH, HEIGHT, ZONE_RADIUS = sizes
         surface = pygame.Surface((WIDTH, HEIGHT)).convert_alpha()
-        surface.fill((0,0,0,0))  # Make background transparent
+        surface.fill((0, 0, 0, 0))  # Make background transparent
         x_min, x_max, y_min, y_max = state.get_min_max_coords()
         width_padding_percent = 0.8
         height_padding_percent = 0.7
-        
+
         # Draw each connection
         for connection in state.connections:
             zone_1 = None
@@ -238,7 +242,8 @@ class StateVisualizer(AbstractStateVisualizer):
                 if zone.name == connection.zones[0]:
                     zone_x = (zone.x - x_min) * (
                         WIDTH * width_padding_percent
-                    ) / (x_max - x_min) + WIDTH * ((1 - width_padding_percent) / 2)
+                    ) / (x_max - x_min) + WIDTH * (
+                        (1 - width_padding_percent) / 2)
                     zone_y = (zone.y - (y_min)) * (
                         HEIGHT * height_padding_percent
                     ) / max(1, (y_max - y_min)) + HEIGHT * (
@@ -249,7 +254,8 @@ class StateVisualizer(AbstractStateVisualizer):
                 if zone.name == connection.zones[1]:
                     zone_x = (zone.x - x_min) * (
                         WIDTH * width_padding_percent
-                    ) / (x_max - x_min) + WIDTH * ((1 - width_padding_percent) / 2)
+                    ) / (x_max - x_min) + WIDTH * (
+                        (1 - width_padding_percent) / 2)
                     zone_y = (zone.y - (y_min)) * (
                         HEIGHT * height_padding_percent
                     ) / max(1, (y_max - y_min)) + HEIGHT * (
@@ -258,9 +264,13 @@ class StateVisualizer(AbstractStateVisualizer):
                     zone_2 = (zone_x, zone_y)
                 if zone_1 is not None and zone_2 is not None:
                     pygame.draw.line(surface, 'white', zone_1, zone_2, width=5)
-                    text_surface = font.render(f'{connection.moving}/{connection.max_link_capacity}', True, 'white')
-                    text_coords = ((max(zone_1[0], zone_2[0]) + min(zone_1[0], zone_2[0])) / 2,
-                                   (max(zone_1[1], zone_2[1]) + min(zone_1[1], zone_2[1])) / 2)
+                    text_surface = font.render(
+                        f'{connection.moving}/{connection.max_link_capacity}',
+                        True, 'white')
+                    text_coords = ((max(zone_1[0], zone_2[0]) + min(
+                        zone_1[0], zone_2[0])) / 2,
+                                   (max(zone_1[1], zone_2[1]) + min(
+                                       zone_1[1], zone_2[1])) / 2)
                     surface.blit(text_surface, text_coords)
         return surface
 
@@ -268,7 +278,7 @@ class StateVisualizer(AbstractStateVisualizer):
     def create_drones(state: State, sizes: tuple, drone_tex: pygame.Surface):
         WIDTH, HEIGHT, ZONE_RADIUS = sizes
         surface = pygame.Surface((WIDTH, HEIGHT)).convert_alpha()
-        surface.fill((0,0,0,0))  # Make background transparent
+        surface.fill((0, 0, 0, 0))  # Make background transparent
         x_min, x_max, y_min, y_max = state.get_min_max_coords()
         width_padding_percent = 0.8
         height_padding_percent = 0.7
@@ -286,9 +296,11 @@ class StateVisualizer(AbstractStateVisualizer):
                 ) / max(1, (y_max - y_min)) + HEIGHT * (
                     (1 - height_padding_percent) / 2
                 )
-                drone_coords = (drone_x - 10 + local_random.choice(range(-10, 10)),
-                                drone_y - 10 + local_random.choice(range(-10, 10)))
-                surface.blit(drone_tex , drone_coords)
+                drone_coords = (drone_x - 10 + local_random.choice(
+                    range(-10, 10)),
+                                drone_y - 10 + local_random.choice(
+                                    range(-10, 10)))
+                surface.blit(drone_tex, drone_coords)
 
         for connection in state.connections:
             for drone in connection.drones:
@@ -299,7 +311,8 @@ class StateVisualizer(AbstractStateVisualizer):
                     if zone.name == connection.zones[0]:
                         zone_x = (zone.x - x_min) * (
                             WIDTH * width_padding_percent
-                        ) / (x_max - x_min) + WIDTH * ((1 - width_padding_percent) / 2)
+                        ) / (x_max - x_min) + WIDTH * (
+                            (1 - width_padding_percent) / 2)
                         zone_y = (zone.y - (y_min)) * (
                             HEIGHT * height_padding_percent
                         ) / (y_max - y_min) + HEIGHT * (
@@ -311,26 +324,29 @@ class StateVisualizer(AbstractStateVisualizer):
                     if zone.name == connection.zones[1]:
                         zone_x = (zone.x - x_min) * (
                             WIDTH * width_padding_percent
-                        ) / (x_max - x_min) + WIDTH * ((1 - width_padding_percent) / 2)
+                        ) / (x_max - x_min) + WIDTH * (
+                            (1 - width_padding_percent) / 2)
                         zone_y = (zone.y - (y_min)) * (
                             HEIGHT * height_padding_percent
                         ) / (y_max - y_min) + HEIGHT * (
                             (1 - height_padding_percent) / 2
                         )
                         zone_2 = (zone_x, zone_y)
-                
-                drone_coords = ((max(zone_1[0], zone_2[0]) + min(zone_1[0], zone_2[0])) / 2 - 10,
-                                (max(zone_1[1], zone_2[1]) + min(zone_1[1], zone_2[1])) / 2 - 10)
+
+                drone_coords = ((max(zone_1[0], zone_2[0]) + min(
+                    zone_1[0], zone_2[0])) / 2 - 10,
+                                (max(zone_1[1], zone_2[1]) + min(
+                                    zone_1[1], zone_2[1])) / 2 - 10)
 
                 surface.blit(drone_tex, drone_coords)
 
         return surface
-    
+
     @staticmethod
     def create_controls(sizes: tuple, font: Font):
         WIDTH, HEIGHT, ZONE_RADIUS = sizes
         surface = pygame.Surface((WIDTH, HEIGHT)).convert_alpha()
-        surface.fill((0,0,0,0))  # Make background transparent
+        surface.fill((0, 0, 0, 0))  # Make background transparent
         controls = [
                     {
                         'name': 'Reset simulation',
@@ -346,7 +362,8 @@ class StateVisualizer(AbstractStateVisualizer):
         width_sum = 0
 
         for control in controls:
-            key = font.render(f'{control['key_name']}', True, 'yellow', 'black')
+            key = font.render(
+                f'{control['key_name']}', True, 'yellow', 'black')
             text = font.render(f'{control['name']}', True, 'white', 'black')
             surface.blit(key, (width_sum, 0))
             width_sum += key.get_width()
@@ -360,8 +377,9 @@ class StateVisualizer(AbstractStateVisualizer):
     def create_end(sizes: tuple, success_tex: pygame.Surface):
         WIDTH, HEIGHT, ZONE_RADIUS = sizes
         surface = pygame.Surface((WIDTH, HEIGHT)).convert_alpha()
-        surface.fill((0,0,0,0))  # Make background transparent=
+        surface.fill((0, 0, 0, 0))  # Make background transparent=
 
-        surface.blit(success_tex, (WIDTH - success_tex.get_width() - 50, 0 + 50))
+        surface.blit(success_tex,
+                     (WIDTH - success_tex.get_width() - 50, 0 + 50))
 
         return surface
