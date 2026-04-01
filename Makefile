@@ -60,7 +60,12 @@ lint:
 	uv run -m flake8 src main.py
 	uv run mypy src --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
 
+lint-strict:
+	uv run -m flake8 src main.py
+	uv run mypy src main.py --strict
+
+
 lindt:
 	@echo "🍫🍫 !!"
 	uv run -m flake8 src main.py
-	uv run mypy src --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
+	uv run mypy src main.py --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs

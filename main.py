@@ -6,7 +6,7 @@
 #  By: gtourdia <gtourdia@student.42.fr>         +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/03/12 22:24:12 by gtourdia        #+#    #+#               #
-#  Updated: 2026/04/01 16:03:03 by gtourdia        ###   ########.fr        #
+#  Updated: 2026/04/01 17:17:42 by gtourdia        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -17,7 +17,7 @@ from src.ConfigParser import ConfigParser
 from src.StateVisualizer import AssetsException, StateVisualizer
 
 
-def main():
+def main() -> None:
 
     # Get --input argument
     args = get_arguments()
