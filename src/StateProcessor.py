@@ -110,6 +110,8 @@ class StateProcessor(AbstractStateProcessor):
                 for name in connection.zones:
                     if name != current_zone.name:
                         new_neighbour = StateProcessor.str_to_zone(state, name)
+                        if new_neighbour is None:
+                            continue
                         if new_neighbour.zone_type != ZoneType.BLOCKED:
                             available_zones.append(new_neighbour)
 

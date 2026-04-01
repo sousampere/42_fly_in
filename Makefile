@@ -47,8 +47,14 @@ install:
 # 	uv sync
 
 run:
+	uv run python main.py
+
+runarg:
 	uv run python main.py --input $(ARGS)
 
 drun:
 	clear && clear
 	uv run python main.py
+
+lint:
+	flake8 src main.py __init__.py

@@ -1,7 +1,11 @@
 
 
+from copy import deepcopy
+import math
+import stat
 from typing import List
 
+from src.StateProcessor import StateProcessor
 from src.MapState.State import State
 from src.MapState.Connection import Connection
 from src.MapState.Drone import Drone
@@ -39,6 +43,24 @@ class ConfigParser:
 
         # Create state
         state = State(zones=zones, connections=connections)
+
+        # Verify that there is a Start and an End
+        start = None
+        end = None
+        for zone in state.zones:
+            if zone.is_start:
+                start = zone
+            if zone.is_end:
+                end = zone
+        
+        if start is None or end is None:
+            raise ConfigError('No start/end zone')
+        
+        # Verify that the state end is reachable
+        try_state = deepcopy(state)
+        distance = StateProcessor.test(try_state, start)
+        if distance == math.inf:
+            raise ConfigError('End not reachable')
 
         return state
 

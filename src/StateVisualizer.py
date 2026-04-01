@@ -8,10 +8,15 @@ import random
 from pygame.cursors import arrow
 from pygame.font import Font
 
+from src.misc.is_state_solved import is_state_solved
 from src.StateProcessor import StateProcessor
 from src.MapState.Zone import ZoneType
 from src.MapState.State import State
 import pygame
+
+
+class AssetsException(Exception):
+    pass
 
 
 class AbstractStateVisualizer(ABC):
@@ -32,11 +37,22 @@ class StateVisualizer(AbstractStateVisualizer):
 
         # Create screen
         screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
+        pygame.display.set_caption('Fly-in to the moon 🚀​')
 
-        # Load textures
-        block_tex = pygame.image.load('assets/dirt.bmp').convert()
-        drone_tex = pygame.image.load('assets/drone_2.bmp').convert_alpha()
-        arrow_tex = pygame.image.load('assets/arrow.bmp').convert_alpha()
+        try:
+            # Load textures
+            path = 'assets/dirt.bmp'
+            block_tex = pygame.image.load(path).convert()
+            path = 'assets/drone_3.bmp'
+            drone_tex = pygame.image.load(path).convert_alpha()
+            path = 'assets/arrow.bmp'
+            arrow_tex = pygame.image.load(path).convert_alpha()
+            path = 'assets/font.ttf'
+
+            # Init font
+            font = pygame.font.Font(path, 16)
+        except Exception:
+            raise AssetsException(f'Your asset folder is missing {path}')
 
         # Transform texture
         block_tex = pygame.transform.scale(block_tex, (64, 64))
@@ -47,16 +63,11 @@ class StateVisualizer(AbstractStateVisualizer):
         # Create area to detect click, based on the arrow's dimensions
         arrow_rect = arrow_tex.get_rect(topleft=(0, 0))
 
-        # Create background pattern
-
-        # Init font
-        font = pygame.font.Font('assets/font.ttf', 16)
-
-
         processor = StateProcessor()
 
         clock = pygame.time.Clock()
         running = True
+        state_ended = False
         while running:
             sizes = pygame.display.get_surface().get_size()
             sizes = (sizes[0], sizes[1], ZONE_RADIUS)
@@ -103,19 +114,25 @@ class StateVisualizer(AbstractStateVisualizer):
                     running = False
                 
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_SPACE:
+                    if event.key == pygame.K_SPACE and not state_ended:
                         state = processor.process(state)
                         turns += 1
+                        if is_state_solved(state):
+                            state_ended = True
+
 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         turns = 0
                         state = copy.deepcopy(save_state)
+                        state_ended = False
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    if arrow_rect.collidepoint(event.pos):
+                    if arrow_rect.collidepoint(event.pos) and not state_ended:
                         state = processor.process(state)
                         turns += 1
+                        if is_state_solved(state):
+                            state_ended = True
 
     @staticmethod
     def create_background(texture: pygame.Surface, sizes: tuple):
