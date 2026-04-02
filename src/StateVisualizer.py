@@ -2,9 +2,7 @@
 
 from abc import ABC, abstractmethod
 import copy
-from genericpath import isfile
 import random
-import sys
 
 from pygame import Surface, display
 from pygame.font import Font
@@ -121,7 +119,8 @@ class StateVisualizer(AbstractStateVisualizer):
             screen.blit(zones, (0, 0))
 
             # Render drones
-            drones = StateVisualizer.create_drones(state, sizes, drones_textures)
+            drones = StateVisualizer.create_drones(state, sizes,
+                                                   drones_textures)
             screen.blit(drones, (0, 0))
 
             # Render arrow
