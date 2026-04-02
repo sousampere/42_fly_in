@@ -6,7 +6,7 @@
 #  By: gtourdia <gtourdia@student.42.fr>         +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/03/12 22:24:12 by gtourdia        #+#    #+#               #
-#  Updated: 2026/04/01 17:17:42 by gtourdia        ###   ########.fr        #
+#  Updated: 2026/04/02 09:46:52 by gtourdia        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -18,12 +18,16 @@ from src.StateVisualizer import AssetsException, StateVisualizer
 
 
 def main() -> None:
+    """
+        Main script:
+        - Parse the config
+        - Lauch visualizer
+    """
 
     # Get --input argument
     args = get_arguments()
     config_path = args.input
 
-    # state = ConfigParser.parse(config_path)
     try:
         # Parse config
         state = ConfigParser.parse(config_path)
@@ -43,4 +47,7 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        print(f'An error occured: {e}, please contact gtourdia.')

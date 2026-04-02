@@ -15,10 +15,12 @@ import pygame
 
 
 class AssetsException(Exception):
+    """ Exception class to when an asset is unloadable """
     pass
 
 
 class AbstractStateVisualizer(ABC):
+    """ Abstract state visualizer for future implementations """
     @staticmethod
     @abstractmethod
     def visualize(state: State) -> None:
@@ -26,6 +28,7 @@ class AbstractStateVisualizer(ABC):
 
 
 class StateVisualizer(AbstractStateVisualizer):
+    """ State visualizer to visualizer and process a state """
     @staticmethod
     def visualize(state: State) -> None:
         pygame.init()
@@ -147,6 +150,7 @@ class StateVisualizer(AbstractStateVisualizer):
     @staticmethod
     def create_background(texture: pygame.Surface,
                           sizes: tuple[int, int, int]) -> Surface:
+        """ Create a surface for the background """
         WIDTH, HEIGHT, ZONE_RADIUS = sizes
         bg = pygame.Surface((WIDTH, HEIGHT)).convert_alpha()
         bg.fill((0, 0, 0, 0))
@@ -159,6 +163,7 @@ class StateVisualizer(AbstractStateVisualizer):
 
     @staticmethod
     def get_transparency_filter(sizes: tuple[int, int, int]) -> pygame.Surface:
+        """ Apply a shadow surface """
         WIDTH, HEIGHT, ZONE_RADIUS = sizes
         surface = pygame.Surface((WIDTH, HEIGHT)).convert_alpha()
         surface.fill((0, 0, 0, 150))  # Make background transparent
@@ -168,6 +173,7 @@ class StateVisualizer(AbstractStateVisualizer):
     def create_zones(state: State,
                      sizes: tuple[int, int, int],
                      font: Font) -> Surface:
+        """ Create a surface for the zones """
         WIDTH, HEIGHT, ZONE_RADIUS = sizes
         surface = pygame.Surface((WIDTH, HEIGHT)).convert_alpha()
         surface.fill((0, 0, 0, 0))  # Make background transparent
@@ -232,6 +238,7 @@ class StateVisualizer(AbstractStateVisualizer):
     def create_connections(state:
                            State, sizes: tuple[int, int, int],
                            font: Font) -> Surface:
+        """ Create a surface for the connections """
         WIDTH, HEIGHT, ZONE_RADIUS = sizes
         surface = pygame.Surface((WIDTH, HEIGHT)).convert_alpha()
         surface.fill((0, 0, 0, 0))  # Make background transparent
@@ -283,6 +290,7 @@ class StateVisualizer(AbstractStateVisualizer):
     @staticmethod
     def create_drones(state: State, sizes: tuple[int, int, int],
                       drone_tex: pygame.Surface) -> Surface:
+        """ Create a surface for the drone """
         WIDTH, HEIGHT, ZONE_RADIUS = sizes
         surface = pygame.Surface((WIDTH, HEIGHT)).convert_alpha()
         surface.fill((0, 0, 0, 0))  # Make background transparent
@@ -349,6 +357,7 @@ class StateVisualizer(AbstractStateVisualizer):
 
     @staticmethod
     def create_controls(sizes: tuple[int, int, int], font: Font) -> Surface:
+        """ Create a surface for the controls """
         WIDTH, HEIGHT, ZONE_RADIUS = sizes
         surface = pygame.Surface((WIDTH, HEIGHT)).convert_alpha()
         surface.fill((0, 0, 0, 0))  # Make background transparent
@@ -381,6 +390,7 @@ class StateVisualizer(AbstractStateVisualizer):
     @staticmethod
     def create_end(sizes: tuple[int, int, int],
                    success_tex: pygame.Surface) -> Surface:
+        """ Create a surface for the end icon """
         WIDTH, HEIGHT, ZONE_RADIUS = sizes
         surface = pygame.Surface((WIDTH, HEIGHT)).convert_alpha()
         surface.fill((0, 0, 0, 0))  # Make background transparent=
