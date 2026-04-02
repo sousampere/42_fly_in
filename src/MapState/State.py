@@ -20,10 +20,13 @@ class State:
         return None
 
     def __str__(self) -> str:
+        """ String representation of the State """
         return f'Containing {len(self.zones)} '\
                'zones and {len(self.connections)} connections.'
 
     def get_min_max_coords(self) -> tuple[int, int, int, int]:
+        """ Return the min and max coords of
+        the zones in the state """
         # Get max and min coords
         x_min = 0
         x_max = 0

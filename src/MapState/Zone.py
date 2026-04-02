@@ -8,14 +8,17 @@ from src.MapState.Drone import Drone
 
 
 class ZoneError(Exception):
+    """ Zone exception class """
     pass
 
 
 class ZoneNameError(ZoneError):
+    """ Zone name exception class """
     pass
 
 
 class ZoneType(Enum):
+    """ Enumeration of zone types """
     NORMAL = 'normal'
     RESTRICTED = 'restricted'
     PRIORITY = 'priority'
@@ -23,6 +26,7 @@ class ZoneType(Enum):
 
 
 class Zone(BaseModel):
+    """ Representation of a zone as an object """
     name: str
     x: int
     y: int
@@ -36,6 +40,7 @@ class Zone(BaseModel):
 
     @model_validator(mode='after')
     def verify(self) -> "Zone":
+        """ Validate data, raise an error if invalid """
         if '-' in self.name:
             raise ZoneNameError('Zone name can\'t have a "-" character.')
         return self

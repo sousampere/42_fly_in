@@ -10,12 +10,16 @@ from src.MapState.Zone import Zone, ZoneError, ZoneType
 
 
 class ConfigError(Exception):
+    """ Config exception error """
     pass
 
 
 class ConfigParser:
+    """ Object for parsing the config """
     @staticmethod
     def parse(file_path: str) -> State:
+        """ Parse the config and output a State object
+         Raise an error if the config is invalid """
         with open(file_path, "r") as f:
             commented_lines = f.readlines()
 
@@ -63,6 +67,7 @@ class ConfigParser:
 
     @staticmethod
     def get_drones(lines: List[str]) -> List[Drone]:
+        """ Return a list of drones from the config """
         for index, line in enumerate(lines, start=1):
             if line.startswith("nb_drones:"):
                 if len(line.split(" ")) != 2:
@@ -141,6 +146,7 @@ class ConfigParser:
 
     @staticmethod
     def get_connections(lines: list[str]) -> list[Connection]:
+        """ Return the parsed connections list from the config """
         connections = []
         for index, line in enumerate(lines, start=1):
             if line.startswith("connection:"):

@@ -3,6 +3,11 @@ from argparse import ArgumentParser, Namespace
 
 
 def get_arguments() -> Namespace:
+    """Parse arguments
+
+    Returns:
+        Namespace: arguments object
+    """
     parser = ArgumentParser(
         prog='Fly-in to the moon !',
         description="A 42 project realised by gtourdia.",

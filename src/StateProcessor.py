@@ -97,6 +97,15 @@ class StateProcessor(AbstractStateProcessor):
 
     @staticmethod
     def get_neighbour_zones(state: State, current_zone: Zone) -> list[Zone]:
+        """Return the list of zones connected to the current Zone
+
+        Args:
+            state (State): current state
+            current_zone (Zone): zone to check neighbours
+
+        Returns:
+            list[Zone]: neighbour zones
+        """
         available_zones: list[Zone] = []
         # Check all connections
         for connection in state.connections:
@@ -384,6 +393,7 @@ class StateProcessor(AbstractStateProcessor):
 
     @staticmethod
     def get_cost(state: State, zone_1: Zone, zone_2: Zone) -> int:
+        """ Return the cost of moving from a zone to another zone """
         for connection in state.connections:
             if zone_1.name in connection.zones:
                 if zone_2.name in connection.zones:
@@ -396,6 +406,7 @@ class StateProcessor(AbstractStateProcessor):
     @staticmethod
     def get_drone_last_visided_zone(state: State,
                                     drone_name: str) -> list[Any]:
+        """ return the list of last visited zones of a drone """
         for zone in state.zones:
             for drone in zone.drones:
                 if drone_name == drone.name:
@@ -424,6 +435,7 @@ class StateProcessor(AbstractStateProcessor):
     def get_zone_connection(
         state: State, zone_1: Zone, zone_2: Zone
     ) -> Connection | None:
+        """ Return a connection that connects two zones """
         for connection in state.connections:
             if (
                 connection.zones[0] == zone_1.name
@@ -441,6 +453,9 @@ class StateProcessor(AbstractStateProcessor):
         connection = StateProcessor.get_zone_connection(state,
                                                         location,
                                                         destination)
+        """ Return True if moving to a zone is possible,
+         by checking its max_capacity, its current capacity,
+          and the connection threshold """
 
         # Connection not found
         if connection is None:
