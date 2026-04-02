@@ -180,7 +180,7 @@ The project implements a multi-drone pathfinding and scheduling system using a c
 
 The simulation provides real-time feedback through colored terminal output:
 
-![Video](https://raw.githubusercontent.com/sousampere/42_fly_in/refs/heads/main/assets/visualizer.bmp)
+![Video](https://github.com/sousampere/42_fly_in/blob/main/assets/visualizer.gif?raw=true)
 
 ### Output Format
 
