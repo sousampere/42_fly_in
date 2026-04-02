@@ -64,7 +64,7 @@ class StateVisualizer(AbstractStateVisualizer):
                         texture = pygame.image.load(
                             f'{drones_directory}/{item}'
                             ).convert_alpha()
-                        texture = pygame.transform.scale(texture, (32, 32))
+                        texture = pygame.transform.scale(texture, (40, 40))
                         drones_textures.append(texture)
                     except Exception:
                         pass
@@ -94,9 +94,15 @@ class StateVisualizer(AbstractStateVisualizer):
 
         processor = StateProcessor()
 
+        # Auto process event creation
+        AUTO_PROCESS = pygame.USEREVENT + 1
+        process_delay = 1000
+        pygame.time.set_timer(AUTO_PROCESS, process_delay)
+
         clock = pygame.time.Clock()
         running = True
         state_ended = False
+        run_auto_process = False
         while running:
             dimensions = pygame.display.get_surface().get_size()
             sizes = (dimensions[0], dimensions[1], ZONE_RADIUS)
@@ -161,8 +167,19 @@ class StateVisualizer(AbstractStateVisualizer):
                         state = copy.deepcopy(save_state)
                         state_ended = False
 
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_a:
+                        run_auto_process = not run_auto_process
+
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if arrow_rect.collidepoint(event.pos) and not state_ended:
+                        state = processor.process(state)
+                        turns += 1
+                        if is_state_solved(state):
+                            state_ended = True
+
+                if event.type == AUTO_PROCESS:
+                    if run_auto_process:
                         state = processor.process(state)
                         turns += 1
                         if is_state_solved(state):
@@ -386,14 +403,19 @@ class StateVisualizer(AbstractStateVisualizer):
         surface.fill((0, 0, 0, 0))  # Make background transparent
         controls = [
                     {
-                        'name': 'Reset simulation',
+                        'name': '- Reset simulation',
                         'key_name': 'ESCAPE  ',
                         'key': pygame.K_ESCAPE
                     },
                     {
-                        'name': 'Next turn',
+                        'name': '- Next turn',
                         'key_name': 'SPACE  ',
                         'key': pygame.K_SPACE
+                    },
+                    {
+                        'name': '- Auto process',
+                        'key_name': 'A ',
+                        'key': pygame.K_a
                     }
                 ]
         width_sum = 0

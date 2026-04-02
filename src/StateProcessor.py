@@ -36,7 +36,9 @@ class StateProcessor(AbstractStateProcessor):
                     state, drone_name, next_zone, state.zones[0]
                 )
                 if next_zone is not None:
-                    moves.append(f'{drone_name}-{next_zone.name}')
+                    drone_location = StateProcessor.get_drone_location(
+                        state, drone_name)
+                    moves.append(f'{drone_name}-{drone_location}')
             else:
                 shortest_path = StateProcessor.get_shortest_path(
                     state, drone_name)
@@ -46,12 +48,15 @@ class StateProcessor(AbstractStateProcessor):
                     )
                 if shortest_path is not None and isinstance(
                    shortest_path, Zone):
-                    moves.append(f'{drone_name}-{shortest_path.name}')
+                    drone_location = StateProcessor.get_drone_location(
+                        state, drone_name)
+                    moves.append(f'{drone_name}-{drone_location}')
 
         print(' '.join(moves))
         # Reset moving counter for each connection
         for connection in state.connections:
             connection.moving = len(connection.drones)
+
         return state
 
     @staticmethod

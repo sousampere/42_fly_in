@@ -6,7 +6,7 @@
 #  By: gtourdia <gtourdia@student.42.fr>         +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/03/12 22:24:12 by gtourdia        #+#    #+#               #
-#  Updated: 2026/04/02 14:34:29 by gtourdia        ###   ########.fr        #
+#  Updated: 2026/04/02 14:43:34 by gtourdia        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -47,8 +47,7 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    # try:
-    #     main()
-    main()
-    # except Exception as e:
-    #     print(f'An error occured: {e}, please contact gtourdia.')
+    try:
+        main()
+    except Exception as e:
+        print(f'An error occured: {e}, please contact gtourdia.')
