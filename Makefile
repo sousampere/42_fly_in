@@ -64,8 +64,15 @@ lint-strict:
 	uv run -m flake8 src main.py
 	uv run mypy src main.py --strict
 
+debug:
+	uv run python -m pdb main.py
 
 lindt:
 	@echo "🍫🍫 !!"
 	uv run -m flake8 src main.py
 	uv run mypy src main.py --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
+
+clean:
+	rm -rf .venv
+	rm -rf .mypy_cache
+	rm -rf .vscode

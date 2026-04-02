@@ -24,6 +24,7 @@ class StateProcessor(AbstractStateProcessor):
         if StateProcessor.is_completed(state):
             return state
 
+        moves = []
         for drone_name in state.drone_names:
             # Get drone location
             drone_location = StateProcessor.get_drone_location(
@@ -34,6 +35,8 @@ class StateProcessor(AbstractStateProcessor):
                 state = StateProcessor.move_drone(
                     state, drone_name, next_zone, state.zones[0]
                 )
+                if next_zone is not None:
+                    moves.append(f'{drone_name}-{next_zone.name}')
             else:
                 shortest_path = StateProcessor.get_shortest_path(
                     state, drone_name)
@@ -41,7 +44,11 @@ class StateProcessor(AbstractStateProcessor):
                     state = StateProcessor.move_drone(
                         state, drone_name, shortest_path, state.zones[0]
                     )
+                if shortest_path is not None and isinstance(
+                   shortest_path, Zone):
+                    moves.append(f'{drone_name}-{shortest_path.name}')
 
+        print(' '.join(moves))
         # Reset moving counter for each connection
         for connection in state.connections:
             connection.moving = len(connection.drones)
@@ -319,8 +326,6 @@ class StateProcessor(AbstractStateProcessor):
                         return zone
                 else:
                     break
-
-        print(f"---- Drone {drone_name} has best route at {sort[0]}")
 
         if StateProcessor.calculate_distance_from_end(
            state, sort[0]) > min_distance:

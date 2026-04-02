@@ -3,8 +3,6 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-# from src.MapState.Drone import Drone
-
 
 class Connection(BaseModel):
     """ Connection object """

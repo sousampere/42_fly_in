@@ -46,7 +46,7 @@ class StateVisualizer(AbstractStateVisualizer):
             # Load textures
             path = 'assets/dirt.bmp'
             block_tex = pygame.image.load(path).convert()
-            path = 'assets/drone_3.bmp'
+            path = 'assets/drone.bmp'
             drone_tex = pygame.image.load(path).convert_alpha()
             path = 'assets/arrow.bmp'
             arrow_tex = pygame.image.load(path).convert_alpha()
