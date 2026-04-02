@@ -112,13 +112,16 @@ class ConfigParser:
                         case "color":
                             color = metadata.split("=")[1].strip("\n]")
                         case "zone":
-                            zone_type = ZoneType(metadata.split("=")[1].strip("\n]"))
+                            zone_type = ZoneType(metadata.split(
+                                "=")[1].strip("\n]"))
                         case "max_drones":
-                            max_drones = int(metadata.split("=")[1].strip("\n]"))
+                            max_drones = int(
+                                metadata.split("=")[1].strip("\n]"))
 
                 try:
                     if name in [z.name for z in zones]:
-                        raise ConfigError("Zone name already" f" used at line {index}")
+                        raise ConfigError(
+                            "Zone name already" f" used at line {index}")
                     zones.append(
                         Zone(
                             name=name,
@@ -143,7 +146,8 @@ class ConfigParser:
             if line.startswith("connection:"):
                 if len(line.split("[")[0].strip().split(" ")) != 2:
                     raise ConfigError(f"Invalid connection at line {index}")
-                connection = line.split("[")[0].strip().split(" ")[1].split("-")
+                connection = line.split("["
+                                        )[0].strip().split(" ")[1].split("-")
                 if len(connection) != 2:
                     raise ConfigError(f"Invalid connection at line {index}")
                 if connection[0] == connection[1]:

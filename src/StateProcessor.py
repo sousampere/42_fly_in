@@ -26,7 +26,8 @@ class StateProcessor(AbstractStateProcessor):
 
         for drone_name in state.drone_names:
             # Get drone location
-            drone_location = StateProcessor.get_drone_location(state, drone_name)
+            drone_location = StateProcessor.get_drone_location(
+                state, drone_name)
             if isinstance(drone_location, Connection):
                 # Move drone if it is on a connection
                 next_zone = drone_location.get_drone_next_zone(drone_name)
@@ -34,7 +35,8 @@ class StateProcessor(AbstractStateProcessor):
                     state, drone_name, next_zone, state.zones[0]
                 )
             else:
-                shortest_path = StateProcessor.get_shortest_path(state, drone_name)
+                shortest_path = StateProcessor.get_shortest_path(
+                    state, drone_name)
                 if shortest_path is not None:
                     state = StateProcessor.move_drone(
                         state, drone_name, shortest_path, state.zones[0]
@@ -70,7 +72,8 @@ class StateProcessor(AbstractStateProcessor):
 
         # Drone found in Zone
         if isinstance(drone_origin, Zone):
-            neighbours = StateProcessor.get_neighbour_zones(state, drone_origin)
+            neighbours = StateProcessor.get_neighbour_zones(
+                state, drone_origin)
             return neighbours
 
         return []
@@ -112,7 +115,8 @@ class StateProcessor(AbstractStateProcessor):
         return available_zones
 
     @staticmethod
-    def get_drone_location(state: State, drone_name: str) -> Zone | Connection | None:
+    def get_drone_location(state: State,
+                           drone_name: str) -> Zone | Connection | None:
         """Return the zone object where a given drone is located"""
         for zone in state.zones:
             if drone_name in [d.name for d in zone.drones]:
@@ -126,7 +130,8 @@ class StateProcessor(AbstractStateProcessor):
 
     @staticmethod
     def move_drone(
-        state: State, drone_name: str, destination: Zone | Connection, going_to: Zone
+        state: State, drone_name: str,
+        destination: Zone | Connection, going_to: Zone
     ) -> State:
         """Move a drone to a Zone or a Connection.
 
@@ -232,7 +237,8 @@ class StateProcessor(AbstractStateProcessor):
         return state
 
     @staticmethod
-    def get_shortest_path(state: State, drone_name: str) -> Zone | Connection | None:
+    def get_shortest_path(state: State,
+                          drone_name: str) -> Zone | Connection | None:
         """Return the zone/connection of the next shortest path
 
         Args:
@@ -259,7 +265,8 @@ class StateProcessor(AbstractStateProcessor):
         )
         if len(sort) == 0:
             return None
-        min_distance = StateProcessor.calculate_distance_from_end(state, sort[0])
+        min_distance = StateProcessor.calculate_distance_from_end(
+            state, sort[0])
 
         # Remove unusable paths to zones
         for zone in sort:
@@ -270,7 +277,8 @@ class StateProcessor(AbstractStateProcessor):
 
         for zone in sort:
             if (
-                zone in StateProcessor.get_drone_last_visided_zone(state, drone_name)
+                zone in StateProcessor.get_drone_last_visided_zone(
+                    state, drone_name)
                 or zone.zone_type == ZoneType.BLOCKED
             ):
                 sort.remove(zone)
@@ -305,7 +313,8 @@ class StateProcessor(AbstractStateProcessor):
 
         print(f"---- Drone {drone_name} has best route at {sort[0]}")
 
-        if StateProcessor.calculate_distance_from_end(state, sort[0]) > min_distance:
+        if StateProcessor.calculate_distance_from_end(
+           state, sort[0]) > min_distance:
             return None
 
         # print(f'Shortest path for {drone_name}: {sort[0]}')
@@ -315,73 +324,66 @@ class StateProcessor(AbstractStateProcessor):
     def calculate_distance_from_end(
         state: State, start_zone: Zone
     ) -> int | float | Any:
-        import math
-        import heapq
-        import itertools
+        """Djikstra algorithm to find the distance of
+        a zone to the end (in turn costs)
 
-        # Utilisation d'une file de priorité (min-heap)
-        # pour l'algorithme de Dijkstra
+        Args:
+            state (State): current state
+            start_zone (Zone): zone to calculate distance
+
+        Returns:
+            int | float | Any: distance
+        """
+        # Queue containing the zones
         queue: list[Any] = []
 
-        # Compteur pour départager les zones avec le
-        # même coût dans la file de priorité
-        # Cela évite une erreur si Python essaie de
-        # comparer deux objets Zone
-        counter = itertools.count()
+        # Add the current zone and a base cost of zero to each zone
+        queue.append([0, start_zone])
 
-        # La file contient des tuples : (coût_cumulé,
-        # compteur, zone_actuelle)
-        heapq.heappush(queue, (0, next(counter), start_zone))
-
-        # On remplace le set par un dictionnaire pour
-        # mémoriser le coût minimum pour atteindre chaque zone
-        (start_zone.name)
+        # Dictionary to track the minimum cost found to reach each zone
         min_costs = {start_zone.name: 0}
 
+        # While there are elements in the queue
         while queue:
-            # On récupère toujours la zone accessible
-            # avec le plus petit coût cumulé
-            current_cost, _, current_zone = heapq.heappop(queue)
 
-            # Final case : comme on explore
-            # toujours le moins cher en premier,
-            # si on atteint la fin, c'est
-            # garanti d'être le chemin le plus court
+            # ---- Block of code to get the zone with the minimum cost ----
+            min_index = 0
+            # For each zone, check its cost
+            for i in range(1, len(queue)):
+                if queue[i][0] < queue[min_index][0]:
+                    # If the cost is less, save its position
+                    min_index = i
+
+            # Then extract the zone with the lowest cost
+            current_cost, current_zone = queue.pop(min_index)
+
+            # Return the current cost if the zone is the end
+            # (final case of the loop)
             if current_zone.is_end:
                 return current_cost
 
-            # Optimisation : si on a extrait un chemin obsolète (un
-            # meilleur chemin
-            # a été trouvé vers cette zone et ajouté à la file), on l'ignore
-            if current_cost > min_costs.get(current_zone.name, math.inf):
-                continue
-
-            # On récupère les voisins
+            # Gets neighbors zones
             neighbors = StateProcessor.get_neighbour_zones(state, current_zone)
 
             for neighbor in neighbors:
+                # Ignore blocked zones
                 if neighbor.zone_type != ZoneType.BLOCKED:
-
-                    # Le nouveau coût est le coût actuel + le
-                    # coût pour entrer dans le voisin
+                    # Calculate cost
                     new_cost = current_cost + StateProcessor.get_cost(
                         state, current_zone, neighbor
                     )
 
-                    # Si c'est la première fois qu'on voit ce voisin OU si
-                    # on a trouvé un chemin moins cher
+                    # If we found a shorter path to this neighbor
                     if new_cost < min_costs.get(neighbor.name, math.inf):
                         min_costs[neighbor.name] = new_cost
 
-                        # On ajoute le voisin à la file avec son
-                        # nouveau coût cumulé
-                        heapq.heappush(queue, (new_cost, next(counter), neighbor))
+                        # Add to list
+                        queue.append([new_cost, neighbor])
 
-        # Si la file se vide sans trouver la fin, c'est un cul-de-sac
-        return math.inf
+        return math.inf  # End never reached
 
     @staticmethod
-    def get_cost(state: State, zone_1: Zone, zone_2: Zone) -> int | None:
+    def get_cost(state: State, zone_1: Zone, zone_2: Zone) -> int:
         for connection in state.connections:
             if zone_1.name in connection.zones:
                 if zone_2.name in connection.zones:
@@ -389,10 +391,11 @@ class StateProcessor(AbstractStateProcessor):
             if zone_2.name in connection.zones:
                 if zone_1.name in connection.zones:
                     return connection.cost
-        return None
+        return 0
 
     @staticmethod
-    def get_drone_last_visided_zone(state: State, drone_name: str) -> list[Any]:
+    def get_drone_last_visided_zone(state: State,
+                                    drone_name: str) -> list[Any]:
         for zone in state.zones:
             for drone in zone.drones:
                 if drone_name == drone.name:
@@ -432,8 +435,12 @@ class StateProcessor(AbstractStateProcessor):
         return connection
 
     @staticmethod
-    def check_capacity_allowance(state: State, location: Any, destination: Any) -> bool:
-        connection = StateProcessor.get_zone_connection(state, location, destination)
+    def check_capacity_allowance(state: State,
+                                 location: Any,
+                                 destination: Any) -> bool:
+        connection = StateProcessor.get_zone_connection(state,
+                                                        location,
+                                                        destination)
 
         # Connection not found
         if connection is None:
