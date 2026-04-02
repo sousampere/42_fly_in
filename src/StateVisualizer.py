@@ -2,7 +2,9 @@
 
 from abc import ABC, abstractmethod
 import copy
+from genericpath import isfile
 import random
+import sys
 
 from pygame import Surface, display
 from pygame.font import Font
@@ -12,6 +14,7 @@ from src.StateProcessor import StateProcessor
 from src.MapState.Zone import ZoneType
 from src.MapState.State import State
 import pygame
+import os
 
 
 class AssetsException(Exception):
@@ -53,9 +56,28 @@ class StateVisualizer(AbstractStateVisualizer):
             path = 'assets/success.bmp'
             success_tex = pygame.image.load(path).convert_alpha()
 
+            # Load drone textures
+            drones_directory = 'assets/drone_textures'
+            drones_textures = []
+            for item in os.listdir(drones_directory):
+                if os.path.isfile(f'{drones_directory}/{item}'):
+                    print(f'{drones_directory}/{item}')
+                    try:
+                        texture = pygame.image.load(
+                            f'{drones_directory}/{item}'
+                            ).convert_alpha()
+                        texture = pygame.transform.scale(texture, (32, 32))
+                        drones_textures.append(texture)
+                    except Exception:
+                        pass
+            if len(drones_textures) == 0:
+                raise AssetsException('No drones textures present')
+
             # Init font
             path = 'assets/font.ttf'
             font = pygame.font.Font(path, 16)
+        except AssetsException as e:
+            raise AssetsException(e)
         except Exception:
             raise AssetsException(f'Your asset folder is missing {path}')
 
@@ -99,7 +121,7 @@ class StateVisualizer(AbstractStateVisualizer):
             screen.blit(zones, (0, 0))
 
             # Render drones
-            drones = StateVisualizer.create_drones(state, sizes, drone_tex)
+            drones = StateVisualizer.create_drones(state, sizes, drones_textures)
             screen.blit(drones, (0, 0))
 
             # Render arrow
@@ -289,7 +311,7 @@ class StateVisualizer(AbstractStateVisualizer):
 
     @staticmethod
     def create_drones(state: State, sizes: tuple[int, int, int],
-                      drone_tex: pygame.Surface) -> Surface:
+                      drone_tex: list[pygame.Surface]) -> Surface:
         """ Create a surface for the drone """
         WIDTH, HEIGHT, ZONE_RADIUS = sizes
         surface = pygame.Surface((WIDTH, HEIGHT)).convert_alpha()
@@ -303,6 +325,7 @@ class StateVisualizer(AbstractStateVisualizer):
 
         for zone in state.zones:
             for drone in zone.drones:
+                texture_random = random.Random(drone.name)
                 drone_x = (zone.x - x_min) * (
                     WIDTH * width_padding_percent
                 ) / (x_max - x_min) + WIDTH * ((1 - width_padding_percent) / 2)
@@ -315,10 +338,11 @@ class StateVisualizer(AbstractStateVisualizer):
                     range(-10, 10)),
                                 drone_y - 10 + local_random.choice(
                                     range(-10, 10)))
-                surface.blit(drone_tex, drone_coords)
+                surface.blit(texture_random.choice(drone_tex), drone_coords)
 
         for connection in state.connections:
             for drone in connection.drones:
+                texture_random = random.Random(drone['drone'].name)
                 for zone in state.zones:
                     # Zone 1 coord
                     if zone.name == connection.zones[0]:
@@ -351,7 +375,7 @@ class StateVisualizer(AbstractStateVisualizer):
                                 (max(zone_1[1], zone_2[1]) + min(
                                     zone_1[1], zone_2[1])) / 2 - 10)
 
-                surface.blit(drone_tex, drone_coords)
+                surface.blit(texture_random.choice(drone_tex), drone_coords)
 
         return surface
 
